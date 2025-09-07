@@ -209,7 +209,7 @@ let bunnyHopMultiplier = 1, maxBunnyHop = 3;
 
 // Crouch
 let isCrouching = false, crouchOffset = -0.7, crouchSpeed = 1, normalSpeed = baseSpeed;
-let groundHeight = -1.5;
+let groundHeight = 0.5;
 
 // --------------------- FIXED OBB COLLISION SYSTEM ---------------------
 const collisionOBBs = [];
@@ -581,7 +581,7 @@ function createMobileControls() {
         e.preventDefault();
         if (canJump && !isCrouching && activeControls === fpsControls) {
             const headCheck = checkVerticalCollisionOBB(
-                new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 0.1, camera.position.z),
+                new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 1, camera.position.z),
                 'up'
             );
             if (!headCheck.collision) {
@@ -625,6 +625,7 @@ function createMobileControls() {
         if (activeControls === orbitControls) {
             activateFPSControls();
             // MAI YAHAN HU
+            const playerCenter = camera.position.clone();
             camera.rotation.set(0, 0, 0);
             cameraModeButton.textContent = 'ORBIT';
         } else {
