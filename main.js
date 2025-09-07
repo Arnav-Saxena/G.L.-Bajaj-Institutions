@@ -178,7 +178,7 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(250, 20, 0);
+camera.position.set(250, 45, 0);
 camera.lookAt(0, 0, 0);
 
 // --------------------- Renderer ---------------------
@@ -202,14 +202,14 @@ let baseSpeed = 4, runSpeed = 8, isRunning = false;
 let velocity = new THREE.Vector3(), direction = new THREE.Vector3();
 
 // Jump / Gravity
-let canJump = true, verticalVelocity = 0, gravity = -20, jumpStrength = 6;
+let canJump = false, verticalVelocity = 0, gravity = -20, jumpStrength = 6;
 
 // Bunny hop
 let bunnyHopMultiplier = 1, maxBunnyHop = 3;
 
 // Crouch
 let isCrouching = false, crouchOffset = -0.7, crouchSpeed = 1, normalSpeed = baseSpeed;
-let groundHeight = -0.5;
+let groundHeight = -1.5;
 
 // --------------------- FIXED OBB COLLISION SYSTEM ---------------------
 const collisionOBBs = [];
@@ -624,6 +624,7 @@ function createMobileControls() {
         e.preventDefault();
         if (activeControls === orbitControls) {
             activateFPSControls();
+            // MAI YAHAN HU
             camera.rotation.set(0, 0, 0);
             cameraModeButton.textContent = 'ORBIT';
         } else {
