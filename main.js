@@ -191,7 +191,7 @@ document.body.appendChild(renderer.domElement);
 // --------------------- Controls ---------------------
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
-orbitControls.target.set(0, -10, 0);
+orbitControls.target.set(0, 0, 0);
 orbitControls.dampingFactor = 0.05;
 orbitControls.update();
 const currentPolar = orbitControls.getPolarAngle(); // phi - vertical angle
@@ -199,7 +199,8 @@ orbitControls.minPolarAngle = currentPolar;
 orbitControls.maxPolarAngle = currentPolar;
 // Auto-Rotate
 orbitControls.autoRotate = true;
-orbitControls.autoRotateSpeed = -100.0; // Adjust speed as needed (default is 2.0)
+orbitControls.autoRotateSpeed = -1.0; // Adjust speed as needed (default is 2.0)
+
 
 
 const fpsControls = new PointerLockControls(camera, renderer.domElement);
