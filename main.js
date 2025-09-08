@@ -178,8 +178,9 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(250, 45, 0);
+camera.position.set(300, 105, 100);
 camera.lookAt(0, 0, 0);
+camera.zoom = 2;
 
 // --------------------- Renderer ---------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -190,8 +191,16 @@ document.body.appendChild(renderer.domElement);
 // --------------------- Controls ---------------------
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
-orbitControls.target.set(0, 1, 0);
+orbitControls.target.set(0, -10, 0);
+orbitControls.dampingFactor = 0.05;
 orbitControls.update();
+const currentPolar = orbitControls.getPolarAngle(); // phi - vertical angle
+orbitControls.minPolarAngle = currentPolar;
+orbitControls.maxPolarAngle = currentPolar;
+// Auto-Rotate
+orbitControls.autoRotate = true;
+orbitControls.autoRotateSpeed = -100.0; // Adjust speed as needed (default is 2.0)
+
 
 const fpsControls = new PointerLockControls(camera, renderer.domElement);
 fpsControls.enabled = false;
