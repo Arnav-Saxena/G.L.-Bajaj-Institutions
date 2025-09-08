@@ -5,6 +5,160 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
+// ✅ FIXED OBB (Oriented Bounding Box) Class - Properly transforms AABB to OBB
+class OBB {
+    constructor(center, extents, rotation) {
+        this.center = center ? center.clone() : new THREE.Vector3();
+        this.extents = extents ? extents.clone() : new THREE.Vector3(); // Half-sizes along each axis
+        this.rotation = rotation ? rotation.clone() : new THREE.Euler();
+        this.quaternion = new THREE.Quaternion();
+        this.axes = [
+            new THREE.Vector3(),
+            new THREE.Vector3(),
+            new THREE.Vector3()
+        ];
+        this.updateAxes();
+    }
+
+    updateAxes() {
+        // Get the three axes of the OBB from the rotation matrix
+        const rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(this.rotation);
+        this.axes[0].set(1, 0, 0).applyMatrix4(rotationMatrix);
+        this.axes[1].set(0, 1, 0).applyMatrix4(rotationMatrix);
+        this.axes[2].set(0, 0, 1).applyMatrix4(rotationMatrix);
+
+        // Update quaternion
+        this.quaternion.setFromEuler(this.rotation);
+    }
+
+    /**
+     * PROPER 3-STEP OBB CREATION:
+     * 1. Build AABB (Box3) from mesh geometry
+     * 2. Use that box to get the size & center
+     * 3. Transform it into an OBB by applying mesh's world rotation and position
+     */
+    static fromMesh(mesh) {
+        console.log(`Creating OBB for mesh: ${mesh.name || 'unnamed'}`);
+
+        // STEP 1: Build AABB (Box3) from mesh geometry
+        if (!mesh.geometry.boundingBox) {
+            mesh.geometry.computeBoundingBox();
+        }
+
+        // Get the local space AABB from geometry
+        const localAABB = new THREE.Box3().copy(mesh.geometry.boundingBox);
+
+        // STEP 2: Use that box to get the size & center
+        const aabbSize = new THREE.Vector3();
+        const aabbCenter = new THREE.Vector3();
+
+        localAABB.getSize(aabbSize);
+        localAABB.getCenter(aabbCenter);
+
+        // STEP 3: Transform it into an OBB by applying mesh's world rotation and position
+
+        // Update world matrix to ensure we have current transforms
+        mesh.updateMatrixWorld(true);
+
+        // Extract world transformation components
+        const worldPosition = new THREE.Vector3();
+        const worldQuaternion = new THREE.Quaternion();
+        const worldScale = new THREE.Vector3();
+
+        mesh.matrixWorld.decompose(worldPosition, worldQuaternion, worldScale);
+
+        // Transform the AABB center to world space
+        const worldCenter = aabbCenter.clone();
+        worldCenter.multiply(worldScale); // Apply scale first
+        worldCenter.applyQuaternion(worldQuaternion); // Then rotation
+        worldCenter.add(worldPosition); // Finally translation
+
+        // Apply world scale to the size and get half-extents
+        const worldExtents = aabbSize.clone();
+        worldExtents.multiply(worldScale);
+        worldExtents.multiplyScalar(0.5); // Convert to half-extents
+
+        // Get world rotation as Euler
+        const worldRotation = new THREE.Euler().setFromQuaternion(worldQuaternion);
+
+        console.log(`OBB Created - Center: (${worldCenter.x.toFixed(2)}, ${worldCenter.y.toFixed(2)}, ${worldCenter.z.toFixed(2)}) Extents: (${worldExtents.x.toFixed(2)}, ${worldExtents.y.toFixed(2)}, ${worldExtents.z.toFixed(2)})`);
+
+        // Create and return the OBB
+        return new OBB(worldCenter, worldExtents, worldRotation);
+    }
+
+    // Check if this OBB intersects with another OBB
+    intersectsOBB(other) {
+        const separation = new THREE.Vector3().subVectors(other.center, this.center);
+
+        // Test separation along all 15 potential separating axes
+        const axes = [...this.axes, ...other.axes];
+
+        // Add cross products of axes
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const crossAxis = new THREE.Vector3().crossVectors(this.axes[i], other.axes[j]);
+                if (crossAxis.lengthSq() > 0.0001) {
+                    crossAxis.normalize();
+                    axes.push(crossAxis);
+                }
+            }
+        }
+
+        for (const axis of axes) {
+            if (!this.testSeparatingAxis(axis, other, separation)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    testSeparatingAxis(axis, other, separation) {
+        const projectedSeparation = Math.abs(separation.dot(axis));
+        const projectedThis = this.getProjectedRadius(axis);
+        const projectedOther = other.getProjectedRadius(axis);
+
+        return projectedSeparation <= (projectedThis + projectedOther);
+    }
+
+    getProjectedRadius(axis) {
+        return Math.abs(this.axes[0].dot(axis)) * this.extents.x +
+            Math.abs(this.axes[1].dot(axis)) * this.extents.y +
+            Math.abs(this.axes[2].dot(axis)) * this.extents.z;
+    }
+
+    // Check if a point is inside this OBB
+    containsPoint(point) {
+        const localPoint = new THREE.Vector3().subVectors(point, this.center);
+
+        for (let i = 0; i < 3; i++) {
+            const projection = localPoint.dot(this.axes[i]);
+            if (Math.abs(projection) > this.extents.getComponent(i)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Create debug wireframe mesh
+    createDebugMesh(color = 0xff0000, opacity = 0.5) {
+        const geometry = new THREE.BoxGeometry(this.extents.x * 2, this.extents.y * 2, this.extents.z * 2);
+        const material = new THREE.MeshBasicMaterial({
+            color: color,
+            wireframe: true,
+            transparent: true,
+            opacity: opacity
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.copy(this.center);
+        mesh.rotation.copy(this.rotation);
+        return mesh;
+    }
+}
+
 // ✅ SMART LOADING MANAGER
 const loadingManager = new THREE.LoadingManager(() => {
     console.log('All 3D assets loaded!');
@@ -24,7 +178,7 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(250, 20, 0);
+camera.position.set(250, 45, 0);
 camera.lookAt(0, 0, 0);
 
 // --------------------- Renderer ---------------------
@@ -44,24 +198,230 @@ fpsControls.enabled = false;
 
 // --------------------- Movement ---------------------
 const move = { forward: false, backward: false, left: false, right: false };
-let baseSpeed = 4, runSpeed = 8, isRunning = false;
+let baseSpeed = 6, runSpeed = 12, isRunning = false;
 let velocity = new THREE.Vector3(), direction = new THREE.Vector3();
 
 // Jump / Gravity
-let canJump = true, verticalVelocity = 0, gravity = -20, jumpStrength = 6;
+let canJump = false, verticalVelocity = 0, gravity = -18, jumpStrength = 6;
 
 // Bunny hop
-let bunnyHopMultiplier = 1, maxBunnyHop = 5;
+let bunnyHopMultiplier = 1, maxBunnyHop = 3;
 
 // Crouch
 let isCrouching = false, crouchOffset = -0.7, crouchSpeed = 1, normalSpeed = baseSpeed;
-let groundHeight = -18.5;
+let groundHeight = 1.85;
+
+// --------------------- FIXED OBB COLLISION SYSTEM ---------------------
+const collisionOBBs = [];
+const debugMeshes = [];
+let playerOBB;
+
+// Player collision properties
+const playerRadius = 0.3;
+const playerHeight = 1.5;        // Reduced from 1.8 to make player shorter
+const cameraEyeHeight = 1.35;    // Reduced accordingly - eyes at realistic height
+const playerFeetOffset = 0.05;   // Smaller offset to reduce bouncing
+
+
+// Initialize player OBB
+function initializePlayerOBB() {
+    const playerExtents = new THREE.Vector3(playerRadius, playerHeight/2, playerRadius);
+    // Player OBB center should be at feet + half height
+    const playerFeetY = camera.position.y - cameraEyeHeight;
+    const playerCenter = new THREE.Vector3(
+        camera.position.x, 
+        playerFeetY + playerHeight/2, 
+        camera.position.z
+    );
+    const playerRotation = new THREE.Euler(0, 0, 0);
+
+    playerOBB = new OBB(playerCenter, playerExtents, playerRotation);
+}
+
+// Update player OBB position
+function updatePlayerOBB() {
+    if (playerOBB) {
+        const playerFeetY = camera.position.y - cameraEyeHeight;
+        playerOBB.center.set(
+            camera.position.x, 
+            playerFeetY + playerHeight/2, 
+            camera.position.z
+        );
+        playerOBB.updateAxes();
+    }
+}
+
+// Check horizontal collision using FIXED OBB
+function checkHorizontalCollisionOBB(position) {
+    if (!playerOBB) return false;
+
+    const playerFeetY = position.y - cameraEyeHeight;
+    const testOBB = new OBB(
+        new THREE.Vector3(position.x, playerFeetY + playerHeight/2, position.z),
+        playerOBB.extents.clone(),
+        new THREE.Euler(0, 0, 0)
+    );
+
+    for (const obb of collisionOBBs) {
+        if (testOBB.intersectsOBB(obb)) {
+            if (window.DEBUG_COLLISION_LOG) {
+                console.log('Horizontal collision detected with OBB at:', obb.center);
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// Check vertical collision using FIXED OBB
+function checkVerticalCollisionOBB(cameraPos, direction = 'down') {
+    if (!playerOBB) return { collision: false, height: cameraPos.y };
+
+    const playerFeetY = cameraPos.y - cameraEyeHeight;
+    let testY;
+    
+    if (direction === 'up') {
+        // Check head collision - test slightly above player head
+        testY = playerFeetY + playerHeight + 0.1;
+    } else {
+        // Check foot collision - test at player feet level
+        testY = playerFeetY;
+    }
+
+    const testOBB = new OBB(
+        new THREE.Vector3(cameraPos.x, testY, cameraPos.z),
+        new THREE.Vector3(playerRadius, 0.1, playerRadius), // Thin test volume
+        new THREE.Euler(0, 0, 0)
+    );
+
+    let closestHeight = direction === 'up' ? Infinity : -Infinity;
+    let hasCollision = false;
+
+    for (const obb of collisionOBBs) {
+        if (testOBB.intersectsOBB(obb)) {
+            hasCollision = true;
+
+            if (direction === 'up') {
+                // Hit ceiling - find lowest ceiling point
+                const ceilingY = obb.center.y - obb.extents.y;
+                if (ceilingY < closestHeight) {
+                    closestHeight = ceilingY;
+                }
+            } else {
+                // Hit floor - find highest floor point  
+                const floorY = obb.center.y + obb.extents.y;
+                if (floorY > closestHeight) {
+                    closestHeight = floorY;
+                }
+            }
+        }
+    }
+
+    if (hasCollision) {
+        if (direction === 'up') {
+            // Return camera Y position (ceiling - player height + eye height)
+            return {
+                collision: true,
+                height: closestHeight - playerHeight + cameraEyeHeight
+            };
+        } else {
+            // Return camera Y position (floor + eye height + small offset)
+            return {
+                collision: true,
+                height: closestHeight + cameraEyeHeight + playerFeetOffset
+            };
+        }
+    }
+
+    return {
+        collision: false,
+        height: cameraPos.y
+    };
+}
+
+
+// Enhanced sliding collision with FIXED OBB
+function getValidMovementOBB(currentPos, desiredPos) {
+    // First check if desired position is valid
+    if (!checkHorizontalCollisionOBB(desiredPos)) {
+        return desiredPos;
+    }
+
+    // Try sliding along individual axes
+    const deltaX = desiredPos.x - currentPos.x;
+    const deltaZ = desiredPos.z - currentPos.z;
+
+    // Try X movement only
+    const xOnlyPos = new THREE.Vector3(currentPos.x + deltaX, currentPos.y, currentPos.z);
+    if (!checkHorizontalCollisionOBB(xOnlyPos)) {
+        return xOnlyPos;
+    }
+
+    // Try Z movement only  
+    const zOnlyPos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ);
+    if (!checkHorizontalCollisionOBB(zOnlyPos)) {
+        return zOnlyPos;
+    }
+
+    // Try reduced movement (for better sliding)
+    const reductionFactors = [0.8, 0.6, 0.4, 0.2];
+    
+    for (const factor of reductionFactors) {
+        const reducedPos = new THREE.Vector3(
+            currentPos.x + deltaX * factor,
+            currentPos.y,
+            currentPos.z + deltaZ * factor
+        );
+        
+        if (!checkHorizontalCollisionOBB(reducedPos)) {
+            return reducedPos;
+        }
+        
+        // Try just X with reduced movement
+        const reducedXPos = new THREE.Vector3(currentPos.x + deltaX * factor, currentPos.y, currentPos.z);
+        if (!checkHorizontalCollisionOBB(reducedXPos)) {
+            return reducedXPos;
+        }
+        
+        // Try just Z with reduced movement
+        const reducedZPos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ * factor);
+        if (!checkHorizontalCollisionOBB(reducedZPos)) {
+            return reducedZPos;
+        }
+    }
+
+    // No valid movement found
+    return currentPos;
+}
+
+
+// FIXED: Create OBB from mesh using proper 3-step process
+function createOBBFromMesh(mesh) {
+    return OBB.fromMesh(mesh);
+}
+
+// FIXED: Add mesh to OBB collision detection
+function addToOBBCollision(mesh) {
+    if (mesh.isMesh) {
+        const obb = createOBBFromMesh(mesh);
+        collisionOBBs.push(obb);
+        console.log(`Added OBB collision: ${mesh.name || 'unnamed'}`);
+
+        // Create debug visualization if enabled
+        if (window.DEBUG_COLLIDERS) {
+            const debugMesh = obb.createDebugMesh();
+            scene.add(debugMesh);
+            debugMeshes.push(debugMesh);
+        }
+    }
+}
 
 // --------------------- MOBILE CONTROLS ---------------------
 let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 let joystickActive = true;
 let joystickVector = new THREE.Vector2(0, 0);
-let rightTouchId = null; // Added missing variable declaration
+let rightTouchId = null;
 
 // Touch controls
 let touchStartX = 0, touchStartY = 0;
@@ -278,8 +638,11 @@ function createMobileControls() {
     // Jump Button
     function handleJump(e) {
         e.preventDefault();
-        if (canJump && !isCrouching && activeControls === fpsControls) {
-            const headCheck = checkHeadCollision(camera.position);
+        if (canJump && !(false) && activeControls === fpsControls) {
+            const headCheck = checkVerticalCollisionOBB(
+                new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 1, camera.position.z),
+                'up'
+            );
             if (!headCheck.collision) {
                 verticalVelocity = jumpStrength;
                 canJump = false;
@@ -320,7 +683,10 @@ function createMobileControls() {
         e.preventDefault();
         if (activeControls === orbitControls) {
             activateFPSControls();
+            // MAI YAHAN HU
             camera.rotation.set(0, 0, 0);
+            const playerCenter = camera.position.clone();
+            
             cameraModeButton.textContent = 'ORBIT';
         } else {
             activateOrbitControls();
@@ -333,16 +699,14 @@ function createMobileControls() {
     let lastTouchX = 0, lastTouchY = 0;
 
     // Store pitch and yaw separately for proper FPS camera control
-    let cameraPitch = 0; // Vertical rotation (around X-axis)
-    let cameraYaw = 0;   // Horizontal rotation (around Y-axis)
+    let cameraPitch = 0;
+    let cameraYaw = 0;
 
     renderer.domElement.addEventListener('touchstart', (e) => {
         if (activeControls !== fpsControls) return;
         for (let t of e.changedTouches) {
-            // ignore joystick touch if already assigned
             if (joystickTouchId !== null && t.identifier === joystickTouchId) continue;
 
-            // if touch starts on right half and we don't have a look finger yet - assign it
             if (rightTouchId === null && t.clientX > window.innerWidth / 2) {
                 rightTouchId = t.identifier;
                 touchLookActive = true;
@@ -355,13 +719,11 @@ function createMobileControls() {
     renderer.domElement.addEventListener('touchmove', (e) => {
         if (activeControls !== fpsControls) return;
         for (let t of e.changedTouches) {
-            // joystick finger - delegate to existing joystick handler
             if (joystickTouchId !== null && t.identifier === joystickTouchId) {
                 handleJoystickMove({ changedTouches: [t], preventDefault: () => { } });
                 continue;
             }
 
-            // look finger
             if (rightTouchId !== null && t.identifier === rightTouchId) {
                 const deltaX = t.clientX - lastTouchX;
                 const deltaY = t.clientY - lastTouchY;
@@ -382,13 +744,11 @@ function createMobileControls() {
 
     renderer.domElement.addEventListener('touchend', (e) => {
         for (let t of e.changedTouches) {
-            // joystick ended
             if (joystickTouchId !== null && t.identifier === joystickTouchId) {
                 handleJoystickEnd({ changedTouches: [t], preventDefault: () => { } });
                 joystickTouchId = null;
             }
 
-            // look finger ended
             if (rightTouchId !== null && t.identifier === rightTouchId) {
                 rightTouchId = null;
                 touchLookActive = false;
@@ -499,191 +859,25 @@ function createFullscreenButton() {
 // Create fullscreen button
 createFullscreenButton();
 
-// --------------------- ENHANCED COLLISION SYSTEM ---------------------
-const collidableObjects = [];
-const colliderBoxes = [];
-const cameraBox = new THREE.Box3();
-
-// Enhanced collision box - more realistic player size
-const cameraBoxSize = new THREE.Vector3(0.8, 1.8, 0.8); // Taller for better head collision
-const collisionMargin = 0.025;
-
-// FIXED: Separate collision detection for different movement types
-function checkHorizontalCollision(position) {
-    const testBox = cameraBox.clone();
-    testBox.setFromCenterAndSize(
-        new THREE.Vector3(position.x, position.y + cameraBoxSize.y / 2, position.z),
-        new THREE.Vector3(cameraBoxSize.x, cameraBoxSize.y, cameraBoxSize.z)
-    );
-
-    for (let i = 0; i < colliderBoxes.length; i++) {
-        if (testBox.intersectsBox(colliderBoxes[i])) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// FIXED: Dedicated vertical collision check for jumping/falling
-function checkVerticalCollision(position, direction = 'up') {
-    const testBox = cameraBox.clone();
-
-    // For upward movement (jumping), check from head position
-    // For downward movement (falling), check from feet position
-    let testY = position.y + cameraBoxSize.y / 2;
-    if (direction === 'down') {
-        testY = position.y;
-    }
-
-    testBox.setFromCenterAndSize(
-        new THREE.Vector3(position.x, testY, position.z),
-        cameraBoxSize
-    );
-
-    for (let i = 0; i < colliderBoxes.length; i++) {
-        if (testBox.intersectsBox(colliderBoxes[i])) {
-            if (window.DEBUG_COLLISION_LOG) {
-                const colliderCenter = colliderBoxes[i].getCenter(new THREE.Vector3());
-                console.log(`${direction} collision at player Y: ${position.y.toFixed(2)} with collider at Y: ${colliderCenter.y.toFixed(2)}`);
-            }
-            return { collision: true, box: colliderBoxes[i] };
-        }
-    }
-    return { collision: false, box: null };
-}
-
-// FIXED: Better head collision detection
-function checkHeadCollision(position) {
-    const headTestBox = new THREE.Box3();
-    const headHeight = 0.3; // Small box at head level
-
-    headTestBox.setFromCenterAndSize(
-        new THREE.Vector3(
-            position.x,
-            position.y + cameraBoxSize.y - headHeight / 2, // At head level
-            position.z
-        ),
-        new THREE.Vector3(cameraBoxSize.x, headHeight, cameraBoxSize.z)
-    );
-
-    for (let i = 0; i < colliderBoxes.length; i++) {
-        if (headTestBox.intersectsBox(colliderBoxes[i])) {
-            return { collision: true, box: colliderBoxes[i] };
-        }
-    }
-    return { collision: false, box: null };
-}
-
-// Function to create collision boxes with proper positioning fixes
-function createCollisionBoxesFromMesh(mesh) {
-    mesh.updateMatrixWorld(true);
-
-    const box = new THREE.Box3().setFromObject(mesh);
-
-    // Expand the box slightly for better collision detection
-    box.expandByScalar(collisionMargin);
-
-    colliderBoxes.push(box);
-    console.log(`Added collision box for: ${mesh.name}`);
-    console.log(`Box bounds: min(${box.min.x.toFixed(2)}, ${box.min.y.toFixed(2)}, ${box.min.z.toFixed(2)}) max(${box.max.x.toFixed(2)}, ${box.max.y.toFixed(2)}, ${box.max.z.toFixed(2)})`);
-
-    // Optional: Create visual debug box
-    if (window.DEBUG_COLLIDERS) {
-        const boxGeometry = new THREE.BoxGeometry(
-            box.max.x - box.min.x,
-            box.max.y - box.min.y,
-            box.max.z - box.min.z
-        );
-        const boxMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff0000,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.3
-        });
-        const debugBox = new THREE.Mesh(boxGeometry, boxMaterial);
-        debugBox.position.copy(box.getCenter(new THREE.Vector3()));
-        scene.add(debugBox);
-    }
-}
-
-// FIXED: Sliding collision with separate horizontal movement
-function getValidMovement(currentPos, desiredPos) {
-    // Try full movement first
-    if (!checkHorizontalCollision(desiredPos)) {
-        return desiredPos;
-    }
-
-    // Try X-axis movement only
-    const xOnlyPos = new THREE.Vector3(desiredPos.x, currentPos.y, currentPos.z);
-    if (!checkHorizontalCollision(xOnlyPos)) {
-        return xOnlyPos;
-    }
-
-    // Try Z-axis movement only
-    const zOnlyPos = new THREE.Vector3(currentPos.x, currentPos.y, desiredPos.z);
-    if (!checkHorizontalCollision(zOnlyPos)) {
-        return zOnlyPos;
-    }
-
-    // No valid movement
-    return currentPos;
-}
-
-// Function to manually adjust collision box positions
-function adjustCollisionBoxHeight(yOffset) {
-    colliderBoxes.forEach((box, index) => {
-        box.min.y += yOffset;
-        box.max.y += yOffset;
-        console.log(`Adjusted collision box ${index} by ${yOffset} units`);
-    });
-
-    // Update debug visualizations if they exist
-    if (window.DEBUG_COLLIDERS) {
-        // Remove existing debug boxes
-        const debugBoxes = scene.children.filter(child =>
-            child.material && child.material.wireframe &&
-            (child.material.color.getHex() === 0xff0000 || child.material.color.getHex() === 0x00ff00)
-        );
-        debugBoxes.forEach(box => scene.remove(box));
-
-        // Re-create debug boxes with new positions
-        colliderBoxes.forEach((box, index) => {
-            const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
-
-            const boxGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
-            const boxMaterial = new THREE.MeshBasicMaterial({
-                color: 0xff0000,
-                wireframe: true,
-                transparent: true,
-                opacity: 0.3
-            });
-            const debugBox = new THREE.Mesh(boxGeometry, boxMaterial);
-            debugBox.position.copy(center);
-            scene.add(debugBox);
-        });
-    }
-}
-
 // --------------------- Keyboard Events (Enhanced with Arrow Keys) ---------------------
 document.addEventListener('keydown', (e) => {
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'ShiftRight', 'AltRight', 'AltLeft', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
     switch (e.code) {
         // WASD Controls
         case 'KeyW':
-        case 'ArrowUp': // Added arrow key support
+        case 'ArrowUp':
             move.forward = true;
             break;
         case 'KeyS':
-        case 'ArrowDown': // Added arrow key support
+        case 'ArrowDown':
             move.backward = true;
             break;
         case 'KeyA':
-        case 'ArrowLeft': // Added arrow key support
+        case 'ArrowLeft':
             move.left = true;
             break;
         case 'KeyD':
-        case 'ArrowRight': // Added arrow key support
+        case 'ArrowRight':
             move.right = true;
             break;
         case 'ShiftLeft':
@@ -691,9 +885,11 @@ document.addEventListener('keydown', (e) => {
             isRunning = true;
             break;
         case 'Space':
-            if (canJump && !isCrouching) {
-                // FIXED: Check for head collision before jumping
-                const headCheck = checkHeadCollision(camera.position);
+            if (canJump && !(false)) {
+                const headCheck = checkVerticalCollisionOBB(
+                    new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 0.1, camera.position.z),
+                    'up'
+                );
                 if (!headCheck.collision) {
                     verticalVelocity = jumpStrength;
                     canJump = false;
@@ -713,21 +909,20 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('keyup', (e) => {
     switch (e.code) {
-        // WASD Controls
         case 'KeyW':
-        case 'ArrowUp': // Added arrow key support
+        case 'ArrowUp':
             move.forward = false;
             break;
         case 'KeyS':
-        case 'ArrowDown': // Added arrow key support
+        case 'ArrowDown':
             move.backward = false;
             break;
         case 'KeyA':
-        case 'ArrowLeft': // Added arrow key support
+        case 'ArrowLeft':
             move.left = false;
             break;
         case 'KeyD':
-        case 'ArrowRight': // Added arrow key support
+        case 'ArrowRight':
             move.right = false;
             break;
         case 'ShiftLeft':
@@ -760,8 +955,14 @@ function activateFPSControls() {
     orbitControls.enabled = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
-    camera.position.set(150, -18.5, 0);
+    camera.position.set(150, 5, 0);
     console.log('FPS Controls Activated');
+
+    // Initialize player OBB when switching to FPS
+    if (!playerOBB) {
+        initializePlayerOBB();
+    }
+
     if (document.getElementById("cameraView")) {
         document.getElementById("cameraView").value = "fps";
     }
@@ -771,37 +972,23 @@ window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyO') activateOrbitControls();
     if (e.code === 'KeyP') activateFPSControls();
 
-    // Debug key to toggle collision box visibility
+    // Debug key to toggle OBB visualization
     if (e.code === 'KeyB') {
         window.DEBUG_COLLIDERS = !window.DEBUG_COLLIDERS;
-        console.log('Debug colliders:', window.DEBUG_COLLIDERS);
+        console.log('Debug OBBs:', window.DEBUG_COLLIDERS);
 
-        // Remove existing debug boxes
-        const debugBoxes = scene.children.filter(child =>
-            child.material && child.material.wireframe &&
-            (child.material.color.getHex() === 0xff0000 || child.material.color.getHex() === 0x00ff00)
-        );
-        debugBoxes.forEach(box => scene.remove(box));
+        // Remove existing debug meshes
+        debugMeshes.forEach(mesh => scene.remove(mesh));
+        debugMeshes.length = 0;
 
-        // Re-create debug boxes if enabled
-        if (window.DEBUG_COLLIDERS && colliderBoxes.length > 0) {
-            console.log('Creating debug visualization for collision boxes...');
-            colliderBoxes.forEach((box, index) => {
-                const size = box.getSize(new THREE.Vector3());
-                const center = box.getCenter(new THREE.Vector3());
-
-                const boxGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
-                const boxMaterial = new THREE.MeshBasicMaterial({
-                    color: 0xff0000,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.5
-                });
-                const debugBox = new THREE.Mesh(boxGeometry, boxMaterial);
-                debugBox.position.copy(center);
-                scene.add(debugBox);
-
-                console.log(`Debug box ${index}: center at ${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)}`);
+        // Re-create debug meshes if enabled
+        if (window.DEBUG_COLLIDERS && collisionOBBs.length > 0) {
+            console.log('Creating debug visualization for OBBs...');
+            collisionOBBs.forEach((obb, index) => {
+                const debugMesh = obb.createDebugMesh();
+                scene.add(debugMesh);
+                debugMeshes.push(debugMesh);
+                console.log(`Debug OBB ${index}: center (${obb.center.x.toFixed(1)}, ${obb.center.y.toFixed(1)}, ${obb.center.z.toFixed(1)})`);
             });
         }
     }
@@ -812,42 +999,22 @@ window.addEventListener('keydown', (e) => {
         console.log('Collision logging:', window.DEBUG_COLLISION_LOG);
     }
 
-    // Show current player position
+    // Show current player position and collision info
     if (e.code === 'KeyI') {
         console.log(`Player position: ${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)}`);
         console.log(`Ground height: ${groundHeight}`);
-        console.log(`Total collision boxes: ${colliderBoxes.length}`);
+        console.log(`Total collision OBBs: ${collisionOBBs.length}`);
 
-        // Show collision box heights relative to ground
-        if (colliderBoxes.length > 0) {
-            console.log('Collision box heights relative to ground:');
-            colliderBoxes.slice(0, 5).forEach((box, index) => {
-                const center = box.getCenter(new THREE.Vector3());
-                const minHeight = box.min.y - groundHeight;
-                const maxHeight = box.max.y - groundHeight;
-                console.log(`  Box ${index}: min=${minHeight.toFixed(2)}, max=${maxHeight.toFixed(2)}, center=${(center.y - groundHeight).toFixed(2)} (relative to ground)`);
-            });
-        }
-    }
+        // Test collision at current position
+        const hasCollision = checkHorizontalCollisionOBB(camera.position);
+        console.log(`OBB collision at current position: ${hasCollision}`);
 
-    // Adjust collision boxes up/down for debugging
-    if (e.code === 'ArrowUp') {
-        adjustCollisionBoxHeight(1);
-        console.log('Moved collision boxes up by 1 unit');
-    }
-    if (e.code === 'ArrowDown') {
-        adjustCollisionBoxHeight(-1);
-        console.log('Moved collision boxes down by 1 unit');
-    }
-
-    // Fine adjustment
-    if (e.code === 'PageUp') {
-        adjustCollisionBoxHeight(0.1);
-        console.log('Moved collision boxes up by 0.1 unit');
-    }
-    if (e.code === 'PageDown') {
-        adjustCollisionBoxHeight(-0.1);
-        console.log('Moved collision boxes down by 0.1 unit');
+        // Test head collision
+        const headCheck = checkVerticalCollisionOBB(
+            new THREE.Vector3(camera.position.x, camera.position.y + playerHeight, camera.position.z),
+            'up'
+        );
+        console.log(`Head collision test: ${headCheck.collision}`);
     }
 });
 
@@ -858,7 +1025,7 @@ if (document.getElementById("cameraView")) {
     });
 }
 
-// --------------------- GLTF Loader with Enhanced Collision Detection ---------------------
+// --------------------- GLTF Loader with FIXED OBB Collision Detection ---------------------
 const dracoLoader = new DRACOLoader(loadingManager);
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 
@@ -876,64 +1043,68 @@ loader.load('/model.glb',
         orbitControls.target.copy(center);
         orbitControls.update();
 
-        // Wait a frame for transformations to apply, then create collision boxes
+        // Wait a frame for transformations to apply, then setup FIXED OBB collision detection
         requestAnimationFrame(() => {
-            console.log('Creating collision boxes...');
+            console.log('Setting up FIXED OBB collision detection...');
 
-            // Enhanced collision detection setup
             gltf.scene.traverse((child) => {
                 if (child.isMesh) {
-                    console.log(`Processing mesh: ${child.name}, position: (${child.position.x.toFixed(2)}, ${child.position.y.toFixed(2)}, ${child.position.z.toFixed(2)})`);
+                    console.log(`Processing mesh: ${child.name}, vertices: ${child.geometry.attributes.position.count}, rotation: (${child.rotation.x.toFixed(2)}, ${child.rotation.y.toFixed(2)}, ${child.rotation.z.toFixed(2)})`);
+
+                    let shouldAddToCollision = false;
 
                     // Method 1: Objects with "COLLIDER" in name
                     if (child.name && child.name.includes("COLLIDER")) {
-                        collidableObjects.push(child);
+                        shouldAddToCollision = true;
                         child.visible = false; // Hide collision meshes
-                        createCollisionBoxesFromMesh(child);
+                        console.log(`Added COLLIDER mesh: ${child.name}`);
                     }
-                    // Method 2: Roof-specific collision detection
+                    // Method 2: Specific collision objects
                     else if (child.name && (
                         child.name.toLowerCase().includes("roof") ||
                         child.name.toLowerCase().includes("ceiling") ||
-                        child.name.toLowerCase().includes("top")
-                    )) {
-                        collidableObjects.push(child);
-                        createCollisionBoxesFromMesh(child);
-                        console.log(`Added roof collision for: ${child.name}`);
-                    }
-                    // Method 3: All building meshes
-                    else if (child.name && (
-                        child.name.includes("building") ||
-                        child.name.includes("wall") ||
-                        child.name.includes("floor") ||
-                        child.name.includes("structure") ||
+                        child.name.toLowerCase().includes("top") ||
+                        child.name.toLowerCase().includes("wall") ||
+                        child.name.toLowerCase().includes("floor") ||
+                        child.name.toLowerCase().includes("building") ||
+                        child.name.toLowerCase().includes("structure") ||
                         child.name.toLowerCase().includes("collide")
                     )) {
-                        collidableObjects.push(child);
-                        createCollisionBoxesFromMesh(child);
+                        shouldAddToCollision = true;
+                        console.log(`Added named collision mesh: ${child.name}`);
                     }
-                    // Method 4: Auto-detect large static meshes
+                    // Method 3: Auto-detect large static meshes (but skip transparent materials)
                     else if (child.geometry && child.material) {
-                        const meshBox = new THREE.Box3().setFromObject(child);
-                        const size = meshBox.getSize(new THREE.Vector3());
+                        // Skip transparent materials to avoid alpha collision issues
+                        const isTransparent = child.material.transparent ||
+                            child.material.opacity < 1 ||
+                            (child.material.map && child.material.map.format === THREE.RGBAFormat);
 
-                        // If object is large enough, treat as collidable
-                        if (size.x > 2 || size.y > 2 || size.z > 2) {
-                            collidableObjects.push(child);
-                            createCollisionBoxesFromMesh(child);
+                        if (true) {
+                            const meshBox = new THREE.Box3().setFromObject(child);
+                            const size = meshBox.getSize(new THREE.Vector3());
+
+                            // If object is large enough and not likely to be a small detail, treat as collidable
+                            
+                                shouldAddToCollision = true;
+                                console.log(`Added auto-detected mesh: ${child.name || 'unnamed'} (size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)})`);
+
                         }
+                    }
+
+                    if (shouldAddToCollision) {
+                        addToOBBCollision(child);
                     }
                 }
             });
 
-            console.log(`Created ${colliderBoxes.length} collision boxes`);
+            console.log(`FIXED OBB setup complete. Total collision OBBs: ${collisionOBBs.length}`);
 
-            // Debug: Print collision box info
-            console.log('Collision box analysis:');
-            colliderBoxes.forEach((box, index) => {
-                const center = box.getCenter(new THREE.Vector3());
-                const size = box.getSize(new THREE.Vector3());
-                console.log(`Box ${index}: center(${center.x.toFixed(1)}, ${center.y.toFixed(1)}, ${center.z.toFixed(1)}) size(${size.x.toFixed(1)}, ${size.y.toFixed(1)}, ${size.z.toFixed(1)})`);
+            // List all collision OBBs for debugging
+            console.log('Collision OBBs:');
+            collisionOBBs.forEach((obb, index) => {
+                const size = new THREE.Vector3(obb.extents.x * 2, obb.extents.y * 2, obb.extents.z * 2);
+                console.log(`  ${index}: center (${obb.center.x.toFixed(1)}, ${obb.center.y.toFixed(1)}, ${obb.center.z.toFixed(1)}) size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}`);
             });
         });
     },
@@ -975,7 +1146,7 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// --------------------- FIXED Animation Loop with Proper Vertical Collision ---------------------
+// --------------------- Animation Loop with FIXED OBB Collision ---------------------
 const clock = new THREE.Clock();
 
 function animate() {
@@ -983,6 +1154,9 @@ function animate() {
     const delta = clock.getDelta();
 
     if (activeControls === fpsControls) {
+        // Update player OBB position
+        updatePlayerOBB();
+
         velocity.set(0, 0, 0);
         direction.set(0, 0, 0);
 
@@ -1013,12 +1187,11 @@ function animate() {
         desiredPos.add(forward.clone().multiplyScalar(-direction.z * moveDistance));
         desiredPos.add(right.clone().multiplyScalar(direction.x * moveDistance));
 
-        // Apply collision-aware horizontal movement
-        const validPos = getValidMovement(currentPos, desiredPos);
+        // Apply collision-aware horizontal movement using FIXED OBB
+        const validPos = getValidMovementOBB(currentPos, desiredPos);
         camera.position.copy(validPos);
 
-        // FIXED: Enhanced gravity and vertical collision
-        const prevY = camera.position.y;
+        // Enhanced gravity and vertical collision using FIXED OBB
         verticalVelocity += gravity * delta;
 
         // Calculate next vertical position
@@ -1028,35 +1201,33 @@ function animate() {
         // Check vertical collision based on movement direction
         if (verticalVelocity > 0) {
             // Moving up (jumping) - check head collision
-            const headCheck = checkVerticalCollision(nextPos, 'up');
-            if (headCheck.collision) {
+            const upCheck = checkVerticalCollisionOBB(nextPos, 'up');
+            if (upCheck.collision) {
                 // Hit ceiling/roof - stop upward movement
                 verticalVelocity = 0;
-                const roofBottom = headCheck.box.min.y;
-                camera.position.y = roofBottom - cameraBoxSize.y + 0.1; // Position just below roof
-                console.log('Head hit roof at Y:', roofBottom);
+                camera.position.y = upCheck.height - playerHeight - 0.1;
+                console.log('Head hit ceiling at Y:', upCheck.height);
             } else {
                 camera.position.y = nextY;
             }
         } else {
             // Moving down (falling) - check ground collision
-            const groundCheck = checkVerticalCollision(nextPos, 'down');
-            if (groundCheck.collision) {
+            const downCheck = checkVerticalCollisionOBB(nextPos, 'down');
+            if (downCheck.collision) {
                 // Hit ground/floor
                 verticalVelocity = 0;
                 canJump = true;
-                const floorTop = groundCheck.box.max.y;
-                camera.position.y = floorTop;
-                if (!move.forward && !move.backward && !move.left && !move.right) {
-                    bunnyHopMultiplier = 1;
-                }
+                camera.position.y = downCheck.height;
+                if (isRunning && (!move.forward || !move.backward || !move.left || !move.right)) {
+                bunnyHopMultiplier = 1;
+            }
             } else {
                 camera.position.y = nextY;
             }
         }
 
         // Fallback ground collision (original system as backup)
-        let currentGround = isCrouching ? groundHeight + crouchOffset : groundHeight;
+        let currentGround = (false) ? groundHeight + crouchOffset : groundHeight;
         if (camera.position.y <= currentGround) {
             camera.position.y = currentGround;
             verticalVelocity = 0;
@@ -1075,59 +1246,110 @@ function animate() {
 // Start animation loop
 animate();
 
-// --------------------- Helper Functions for Manual Collision Setup ---------------------
+// --------------------- Helper Functions for Manual Setup ---------------------
 
-// Function to manually add collision boxes (call this from console)
-window.addCollisionBox = function (x, y, z, width, height, depth) {
-    const box = new THREE.Box3(
-        new THREE.Vector3(x - width / 2, y - height / 2, z - depth / 2),
-        new THREE.Vector3(x + width / 2, y + height / 2, z + depth / 2)
-    );
-    colliderBoxes.push(box);
-    console.log(`Added manual collision box at (${x}, ${y}, ${z})`);
-
-    // Create debug visualization
-    if (window.DEBUG_COLLIDERS) {
-        const boxGeometry = new THREE.BoxGeometry(width, height, depth);
-        const boxMaterial = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.5
-        });
-        const debugBox = new THREE.Mesh(boxGeometry, boxMaterial);
-        debugBox.position.set(x, y, z);
-        scene.add(debugBox);
+// Function to manually add collision objects (call this from console)
+window.addOBBCollision = function (objectName) {
+    const object = scene.getObjectByName(objectName);
+    if (object && object.isMesh) {
+        addToOBBCollision(object);
+        console.log(`Manually added ${objectName} to FIXED OBB collision detection`);
+    } else {
+        console.log(`Object ${objectName} not found or is not a mesh`);
     }
 };
 
-// Function to clear all collision boxes
-window.clearCollisionBoxes = function () {
-    colliderBoxes.length = 0;
-    console.log('All collision boxes cleared');
+// Function to remove collision objects
+window.removeOBBCollision = function (objectName) {
+    const object = scene.getObjectByName(objectName);
+    if (object) {
+        const index = collisionOBBs.findIndex(obb => {
+            // Find OBB that matches this object's world position
+            const objectBox = new THREE.Box3().setFromObject(object);
+            const objectCenter = objectBox.getCenter(new THREE.Vector3());
+            return obb.center.distanceTo(objectCenter) < 0.1;
+        });
+
+        if (index !== -1) {
+            collisionOBBs.splice(index, 1);
+            console.log(`Removed ${objectName} from FIXED OBB collision detection`);
+
+            // Remove debug mesh if exists
+            if (debugMeshes[index]) {
+                scene.remove(debugMeshes[index]);
+                debugMeshes.splice(index, 1);
+            }
+        }
+    } else {
+        console.log(`Object ${objectName} not found`);
+    }
+};
+
+// Function to clear all collision objects
+window.clearAllOBBCollisions = function () {
+    collisionOBBs.length = 0;
+    console.log('All FIXED OBB collision objects cleared');
 
     // Remove debug visualizations
-    const debugBoxes = scene.children.filter(child =>
-        child.material && child.material.wireframe &&
-        (child.material.color.getHex() === 0xff0000 || child.material.color.getHex() === 0x00ff00)
+    debugMeshes.forEach(mesh => scene.remove(mesh));
+    debugMeshes.length = 0;
+};
+
+// Function to list all collision objects
+window.listOBBCollisions = function () {
+    console.log(`Total FIXED OBB collision objects: ${collisionOBBs.length}`);
+    collisionOBBs.forEach((obb, index) => {
+        const size = new THREE.Vector3(obb.extents.x * 2, obb.extents.y * 2, obb.extents.z * 2);
+        const rotation = new THREE.Vector3(obb.rotation.x, obb.rotation.y, obb.rotation.z);
+        console.log(`${index}: center (${obb.center.x.toFixed(1)}, ${obb.center.y.toFixed(1)}, ${obb.center.z.toFixed(1)}) - size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)} - rotation: (${rotation.x.toFixed(2)}, ${rotation.y.toFixed(2)}, ${rotation.z.toFixed(2)})`);
+    });
+};
+
+// Function to test collision at specific position
+window.testOBBCollisionAt = function (x, y, z) {
+    const testPos = new THREE.Vector3(x, y, z);
+    const hasCollision = checkHorizontalCollisionOBB(testPos);
+    console.log(`FIXED OBB collision at (${x}, ${y}, ${z}): ${hasCollision}`);
+    return hasCollision;
+};
+
+// Add helper functions for debugging
+window.testOBBHeadCollision = function () {
+    const headCheck = checkVerticalCollisionOBB(
+        new THREE.Vector3(camera.position.x, camera.position.y + playerHeight, camera.position.z),
+        'up'
     );
-    debugBoxes.forEach(box => scene.remove(box));
+    console.log('FIXED OBB head collision test:', headCheck);
 };
 
-// Add helper functions to window for debugging
-window.adjustCollisionHeight = adjustCollisionBoxHeight;
-window.testHeadCollision = function () {
-    const headCheck = checkHeadCollision(camera.position);
-    console.log('Head collision test:', headCheck.collision);
-    if (headCheck.collision) {
-        const center = headCheck.box.getCenter(new THREE.Vector3());
-        console.log('Colliding with box at:', center);
-    }
-};
-
-// Add function to manually test roof collision
-window.testRoofJump = function () {
-    console.log('Testing roof collision...');
-    verticalVelocity = 10; // Strong jump
+window.testOBBJump = function () {
+    console.log('Testing FIXED OBB collision with jump...');
+    verticalVelocity = 10;
     canJump = false;
+};
+
+// Function to test and compare OBB creation methods
+window.debugOBBCreation = function (meshName) {
+    const mesh = scene.getObjectByName(meshName);
+    if (!mesh || !mesh.isMesh) {
+        console.log(`Mesh ${meshName} not found`);
+        return;
+    }
+
+    console.log('=== DEBUGGING OBB CREATION ===');
+    console.log('Mesh:', meshName);
+    console.log('Position:', mesh.position);
+    console.log('Rotation:', mesh.rotation);
+    console.log('Scale:', mesh.scale);
+
+    // Test the FIXED OBB creation
+    const fixedOBB = OBB.fromMesh(mesh);
+    console.log('FIXED OBB Result:', fixedOBB);
+
+    // Create debug visualization
+    const debugMesh = fixedOBB.createDebugMesh(0x00ff00, 0.8);
+    scene.add(debugMesh);
+    console.log('Added green debug visualization');
+
+    return fixedOBB;
 };
