@@ -209,7 +209,7 @@ let bunnyHopMultiplier = 1, maxBunnyHop = 3;
 
 // Crouch
 let isCrouching = false, crouchOffset = -0.7, crouchSpeed = 1, normalSpeed = baseSpeed;
-let groundHeight = 1.75;
+let groundHeight = 1.85;
 
 // --------------------- FIXED OBB COLLISION SYSTEM ---------------------
 const collisionOBBs = [];
@@ -218,8 +218,8 @@ let playerOBB;
 
 // Player collision properties
 const playerRadius = 0.3;
-const playerHeight = 1.6;        // Reduced from 1.8 to make player shorter
-const cameraEyeHeight = 1.45;    // Reduced accordingly - eyes at realistic height
+const playerHeight = 1.5;        // Reduced from 1.8 to make player shorter
+const cameraEyeHeight = 1.35;    // Reduced accordingly - eyes at realistic height
 const playerFeetOffset = 0.05;   // Smaller offset to reduce bouncing
 
 
@@ -1218,7 +1218,7 @@ function animate() {
                 verticalVelocity = 0;
                 canJump = true;
                 camera.position.y = downCheck.height;
-                if (isRunning && (move.forward || move.backward || move.left || move.right)) {
+                if (isRunning && (!move.forward || !move.backward || !move.left || !move.right)) {
                 bunnyHopMultiplier = 1;
             }
             } else {
