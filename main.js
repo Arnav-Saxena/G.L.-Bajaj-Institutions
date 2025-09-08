@@ -178,8 +178,9 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(250, 45, 0);
+camera.position.set(300, 105, 100);
 camera.lookAt(0, 0, 0);
+camera.zoom = 2;
 
 // --------------------- Renderer ---------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -190,8 +191,16 @@ document.body.appendChild(renderer.domElement);
 // --------------------- Controls ---------------------
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
-orbitControls.target.set(0, 1, 0);
+orbitControls.target.set(0, -10, 0);
+orbitControls.dampingFactor = 0.05;
 orbitControls.update();
+const currentPolar = orbitControls.getPolarAngle(); // phi - vertical angle
+orbitControls.minPolarAngle = currentPolar;
+orbitControls.maxPolarAngle = currentPolar;
+// Auto-Rotate
+orbitControls.autoRotate = true;
+orbitControls.autoRotateSpeed = -100.0; // Adjust speed as needed (default is 2.0)
+
 
 const fpsControls = new PointerLockControls(camera, renderer.domElement);
 fpsControls.enabled = false;
@@ -209,7 +218,7 @@ let bunnyHopMultiplier = 1, maxBunnyHop = 3;
 
 // Crouch
 let isCrouching = false, crouchOffset = -0.7, crouchSpeed = 1, normalSpeed = baseSpeed;
-let groundHeight = 1.75;
+let groundHeight = 1.85;
 
 // --------------------- FIXED OBB COLLISION SYSTEM ---------------------
 const collisionOBBs = [];
@@ -218,8 +227,8 @@ let playerOBB;
 
 // Player collision properties
 const playerRadius = 0.3;
-const playerHeight = 1.6;        // Reduced from 1.8 to make player shorter
-const cameraEyeHeight = 1.45;    // Reduced accordingly - eyes at realistic height
+const playerHeight = 1.5;        // Reduced from 1.8 to make player shorter
+const cameraEyeHeight = 1.35;    // Reduced accordingly - eyes at realistic height
 const playerFeetOffset = 0.05;   // Smaller offset to reduce bouncing
 
 
@@ -1218,7 +1227,7 @@ function animate() {
                 verticalVelocity = 0;
                 canJump = true;
                 camera.position.y = downCheck.height;
-                if (isRunning && (move.forward || move.backward || move.left || move.right)) {
+                if (isRunning && (!move.forward || !move.backward || !move.left || !move.right)) {
                 bunnyHopMultiplier = 1;
             }
             } else {
