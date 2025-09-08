@@ -202,14 +202,14 @@ let baseSpeed = 4, runSpeed = 8, isRunning = false;
 let velocity = new THREE.Vector3(), direction = new THREE.Vector3();
 
 // Jump / Gravity
-let canJump = false, verticalVelocity = 0, gravity = -20, jumpStrength = 6;
+let canJump = false, verticalVelocity = 0, gravity = -18, jumpStrength = 6;
 
 // Bunny hop
-let bunnyHopMultiplier = 1, maxBunnyHop = 3;
+let bunnyHopMultiplier = 1.1, maxBunnyHop = 3;
 
 // Crouch
 let isCrouching = false, crouchOffset = -0.7, crouchSpeed = 1, normalSpeed = baseSpeed;
-let groundHeight = 0.5;
+let groundHeight = 1.5;
 
 // --------------------- FIXED OBB COLLISION SYSTEM ---------------------
 const collisionOBBs = [];
@@ -217,13 +217,22 @@ const debugMeshes = [];
 let playerOBB;
 
 // Player collision properties
-const playerRadius = 0.4;
-const playerHeight = 1.2;
+const playerRadius = 0.3;
+const playerHeight = 1.6;        // Reduced from 1.8 to make player shorter
+const cameraEyeHeight = 1.45;    // Reduced accordingly - eyes at realistic height
+const playerFeetOffset = 0.05;   // Smaller offset to reduce bouncing
+
 
 // Initialize player OBB
 function initializePlayerOBB() {
     const playerExtents = new THREE.Vector3(playerRadius, playerHeight/2, playerRadius);
-    const playerCenter = camera.position.clone();
+    // Player OBB center should be at feet + half height
+    const playerFeetY = camera.position.y - cameraEyeHeight;
+    const playerCenter = new THREE.Vector3(
+        camera.position.x, 
+        playerFeetY + playerHeight/2, 
+        camera.position.z
+    );
     const playerRotation = new THREE.Euler(0, 0, 0);
 
     playerOBB = new OBB(playerCenter, playerExtents, playerRotation);
@@ -232,8 +241,12 @@ function initializePlayerOBB() {
 // Update player OBB position
 function updatePlayerOBB() {
     if (playerOBB) {
-        playerOBB.center.copy(camera.position);
-        playerOBB.center.y += playerHeight / 2; // Center the OBB on player
+        const playerFeetY = camera.position.y - cameraEyeHeight;
+        playerOBB.center.set(
+            camera.position.x, 
+            playerFeetY + playerHeight/2, 
+            camera.position.z
+        );
         playerOBB.updateAxes();
     }
 }
@@ -242,9 +255,9 @@ function updatePlayerOBB() {
 function checkHorizontalCollisionOBB(position) {
     if (!playerOBB) return false;
 
-    // Create temporary OBB at the test position
+    const playerFeetY = position.y - cameraEyeHeight;
     const testOBB = new OBB(
-        new THREE.Vector3(position.x, position.y + playerHeight / 2, position.z),
+        new THREE.Vector3(position.x, playerFeetY + playerHeight/2, position.z),
         playerOBB.extents.clone(),
         new THREE.Euler(0, 0, 0)
     );
@@ -252,7 +265,7 @@ function checkHorizontalCollisionOBB(position) {
     for (const obb of collisionOBBs) {
         if (testOBB.intersectsOBB(obb)) {
             if (window.DEBUG_COLLISION_LOG) {
-                console.log('OBB collision detected');
+                console.log('Horizontal collision detected with OBB at:', obb.center);
             }
             return true;
         }
@@ -262,13 +275,23 @@ function checkHorizontalCollisionOBB(position) {
 }
 
 // Check vertical collision using FIXED OBB
-function checkVerticalCollisionOBB(position, direction = 'down') {
-    if (!playerOBB) return { collision: false, height: position.y };
+function checkVerticalCollisionOBB(cameraPos, direction = 'down') {
+    if (!playerOBB) return { collision: false, height: cameraPos.y };
 
-    const testHeight = direction === 'up' ? position.y + playerHeight * 0.1 : position.y;
+    const playerFeetY = cameraPos.y - cameraEyeHeight;
+    let testY;
+    
+    if (direction === 'up') {
+        // Check head collision - test slightly above player head
+        testY = playerFeetY + playerHeight + 0.1;
+    } else {
+        // Check foot collision - test at player feet level
+        testY = playerFeetY;
+    }
+
     const testOBB = new OBB(
-        new THREE.Vector3(position.x, testHeight + playerHeight / 2, position.z),
-        playerOBB.extents.clone(),
+        new THREE.Vector3(cameraPos.x, testY, cameraPos.z),
+        new THREE.Vector3(playerRadius, 0.1, playerRadius), // Thin test volume
         new THREE.Euler(0, 0, 0)
     );
 
@@ -286,7 +309,7 @@ function checkVerticalCollisionOBB(position, direction = 'down') {
                     closestHeight = ceilingY;
                 }
             } else {
-                // Hit floor - find highest floor point
+                // Hit floor - find highest floor point  
                 const floorY = obb.center.y + obb.extents.y;
                 if (floorY > closestHeight) {
                     closestHeight = floorY;
@@ -295,14 +318,32 @@ function checkVerticalCollisionOBB(position, direction = 'down') {
         }
     }
 
+    if (hasCollision) {
+        if (direction === 'up') {
+            // Return camera Y position (ceiling - player height + eye height)
+            return {
+                collision: true,
+                height: closestHeight - playerHeight + cameraEyeHeight
+            };
+        } else {
+            // Return camera Y position (floor + eye height + small offset)
+            return {
+                collision: true,
+                height: closestHeight + cameraEyeHeight + playerFeetOffset
+            };
+        }
+    }
+
     return {
-        collision: hasCollision,
-        height: hasCollision ? closestHeight : position.y
+        collision: false,
+        height: cameraPos.y
     };
 }
 
+
 // Enhanced sliding collision with FIXED OBB
 function getValidMovementOBB(currentPos, desiredPos) {
+    // First check if desired position is valid
     if (!checkHorizontalCollisionOBB(desiredPos)) {
         return desiredPos;
     }
@@ -317,25 +358,43 @@ function getValidMovementOBB(currentPos, desiredPos) {
         return xOnlyPos;
     }
 
-    // Try Z movement only
+    // Try Z movement only  
     const zOnlyPos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ);
     if (!checkHorizontalCollisionOBB(zOnlyPos)) {
         return zOnlyPos;
     }
 
-    // Try partial movements
-    const partialX = new THREE.Vector3(currentPos.x + deltaX * 0.5, currentPos.y, currentPos.z);
-    if (!checkHorizontalCollisionOBB(partialX)) {
-        return partialX;
+    // Try reduced movement (for better sliding)
+    const reductionFactors = [0.8, 0.6, 0.4, 0.2];
+    
+    for (const factor of reductionFactors) {
+        const reducedPos = new THREE.Vector3(
+            currentPos.x + deltaX * factor,
+            currentPos.y,
+            currentPos.z + deltaZ * factor
+        );
+        
+        if (!checkHorizontalCollisionOBB(reducedPos)) {
+            return reducedPos;
+        }
+        
+        // Try just X with reduced movement
+        const reducedXPos = new THREE.Vector3(currentPos.x + deltaX * factor, currentPos.y, currentPos.z);
+        if (!checkHorizontalCollisionOBB(reducedXPos)) {
+            return reducedXPos;
+        }
+        
+        // Try just Z with reduced movement
+        const reducedZPos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ * factor);
+        if (!checkHorizontalCollisionOBB(reducedZPos)) {
+            return reducedZPos;
+        }
     }
 
-    const partialZ = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ * 0.5);
-    if (!checkHorizontalCollisionOBB(partialZ)) {
-        return partialZ;
-    }
-
+    // No valid movement found
     return currentPos;
 }
+
 
 // FIXED: Create OBB from mesh using proper 3-step process
 function createOBBFromMesh(mesh) {
@@ -579,7 +638,7 @@ function createMobileControls() {
     // Jump Button
     function handleJump(e) {
         e.preventDefault();
-        if (canJump && !isCrouching && activeControls === fpsControls) {
+        if (canJump && !(false) && activeControls === fpsControls) {
             const headCheck = checkVerticalCollisionOBB(
                 new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 1, camera.position.z),
                 'up'
@@ -625,8 +684,9 @@ function createMobileControls() {
         if (activeControls === orbitControls) {
             activateFPSControls();
             // MAI YAHAN HU
-            const playerCenter = camera.position.clone();
             camera.rotation.set(0, 0, 0);
+            const playerCenter = camera.position.clone();
+            
             cameraModeButton.textContent = 'ORBIT';
         } else {
             activateOrbitControls();
@@ -825,7 +885,7 @@ document.addEventListener('keydown', (e) => {
             isRunning = true;
             break;
         case 'Space':
-            if (canJump && !isCrouching) {
+            if (canJump && !(false)) {
                 const headCheck = checkVerticalCollisionOBB(
                     new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 0.1, camera.position.z),
                     'up'
@@ -1158,8 +1218,8 @@ function animate() {
                 verticalVelocity = 0;
                 canJump = true;
                 camera.position.y = downCheck.height;
-                if (!move.forward && !move.backward && !move.left && !move.right) {
-                    bunnyHopMultiplier = 1;
+                if (true) {
+                    bunnyHopMultiplier = 1.1;
                 }
             } else {
                 camera.position.y = nextY;
@@ -1167,7 +1227,7 @@ function animate() {
         }
 
         // Fallback ground collision (original system as backup)
-        let currentGround = isCrouching ? groundHeight + crouchOffset : groundHeight;
+        let currentGround = (false) ? groundHeight + crouchOffset : groundHeight;
         if (camera.position.y <= currentGround) {
             camera.position.y = currentGround;
             verticalVelocity = 0;
