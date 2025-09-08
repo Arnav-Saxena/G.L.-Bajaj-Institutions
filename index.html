@@ -9,8 +9,6 @@
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
-        
-
         body {
             margin: 0;
             overflow: hidden;
@@ -73,30 +71,37 @@
             max-width: 500px;
             display: none;
 
-            max-height: 70vh;         /* cap height relative to screen */
-            overflow-y: auto;         /* enable scrolling */
+            max-height: 70vh;
+            /* cap height relative to screen */
+            overflow-y: auto;
+            /* enable scrolling */
             overscroll-behavior: contain;
-            scrollbar-width: thin;    /* firefox */
-            scrollbar-color: rgba(255,255,255,0.35) transparent;
+            scrollbar-width: thin;
+            /* firefox */
+            scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
         }
 
         /* chrome / edge (webkit) scrollbar styling */
         #controlsMenu::-webkit-scrollbar {
             width: 8px;
         }
+
         #controlsMenu::-webkit-scrollbar-track {
             background: transparent;
         }
+
         #controlsMenu::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.35);
+            background: rgba(255, 255, 255, 0.35);
             border-radius: 10px;
             background-clip: padding-box;
             border: 2px solid transparent;
         }
+
         #controlsMenu::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.55);
+            background: rgba(255, 255, 255, 0.55);
         }
-/* yahan tak
+
+        /* yahan tak
 */
         #controlsMenu.show {
             display: block;
@@ -208,13 +213,13 @@
             #controlsMenuBtn {
                 display: none;
             }
-            
+
             .top-left {
                 font-size: 20px;
                 top: 10px;
                 left: 10px;
             }
-            
+
             .top-right {
                 top: 10px;
                 right: 10px;
@@ -368,6 +373,10 @@
             .loading-bar-container {
                 max-width: 300px;
             }
+
+            .footer-text {
+                font-size: 0.7rem;
+            }
         }
     </style>
 </head>
@@ -378,7 +387,7 @@
         <div class="rotate-icon">📱↻</div>
         <h2>Please Rotate Your Device</h2>
         <p>This experience is optimized for landscape mode.<br>
-        Please rotate your device horizontally for the best experience.</p>
+            Please rotate your device horizontally for the best experience.</p>
     </div>
 
     <!-- Loading Screen -->
@@ -411,7 +420,7 @@
             <div class="controls-title">CONTROLS</div>
             <button class="close-btn" id="closeControlsBtn">×</button>
         </div>
-        
+
         <div class="control-section">
             <div class="section-title">Movement</div>
             <div class="control-item">
@@ -476,7 +485,7 @@
     <!-- Main Content -->
     <div id="mainContent" style="opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in;">
         <h1 class="top-left">G.L. Bajaj Institutions</h1>
-        
+
         <!-- Controls Menu Button (Desktop Only) -->
         <button id="controlsMenuBtn">Controls</button>
     </div>
