@@ -53,7 +53,6 @@
         }
 
         /* Desktop Controls Menu */
-        /* inside your <style> tag, replace only the #controlsMenu block with this */
         #controlsMenu {
             position: fixed;
             top: 50%;
@@ -72,16 +71,12 @@
             display: none;
 
             max-height: 70vh;
-            /* cap height relative to screen */
             overflow-y: auto;
-            /* enable scrolling */
             overscroll-behavior: contain;
             scrollbar-width: thin;
-            /* firefox */
             scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
         }
 
-        /* chrome / edge (webkit) scrollbar styling */
         #controlsMenu::-webkit-scrollbar {
             width: 8px;
         }
@@ -101,8 +96,6 @@
             background: rgba(255, 255, 255, 0.55);
         }
 
-        /* yahan tak
-*/
         #controlsMenu.show {
             display: block;
         }
@@ -189,7 +182,7 @@
         #controlsMenuBtn {
             position: absolute;
             top: 20px;
-            right: 20px;
+            right: 160px; /* Moved left to make room for camera button */
             z-index: 10;
             background: rgba(33, 150, 243, 0.8);
             border: 2px solid rgba(33, 150, 243, 1);
@@ -208,9 +201,47 @@
             transform: scale(1.05);
         }
 
-        /* Hide controls menu button on mobile */
+        /* Desktop Camera Mode Button */
+        #desktopCameraModeButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(76, 175, 80, 0.8);
+            border: 2px solid rgba(76, 175, 80, 1);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: block;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        #desktopCameraModeButton:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+
+        #desktopCameraModeButton.fps-mode {
+            background: rgba(255, 152, 0, 0.8);
+            border-color: rgba(255, 152, 0, 1);
+        }
+
+        #desktopCameraModeButton.fps-mode:hover {
+            background: rgba(255, 152, 0, 1);
+        }
+
+        /* Hide desktop camera button on mobile */
         @media (max-width: 768px) {
             #controlsMenuBtn {
+                display: none;
+            }
+
+            #desktopCameraModeButton {
                 display: none;
             }
 
@@ -488,6 +519,9 @@
 
         <!-- Controls Menu Button (Desktop Only) -->
         <button id="controlsMenuBtn">Controls</button>
+
+        <!-- Desktop Camera Mode Button -->
+        <button id="desktopCameraModeButton">ORBIT MODE</button>
     </div>
 
     <script>
@@ -521,6 +555,30 @@
                 }
             });
         }
+
+        // Desktop Camera Mode Toggle Logic
+        function initDesktopCameraToggle() {
+    const cameraModeButton = document.getElementById('desktopCameraModeButton');
+    let isOrbitMode = true; // Track mode locally
+    
+    cameraModeButton.addEventListener('click', () => {
+        if (isOrbitMode) {
+            // Switch to FPS mode
+            const event = new KeyboardEvent('keydown', { code: 'KeyP' });
+            window.dispatchEvent(event);
+            cameraModeButton.textContent = 'FPS MODE';
+            cameraModeButton.classList.add('fps-mode');
+            isOrbitMode = false;
+        } else {
+            // Switch to Orbit mode
+            const event = new KeyboardEvent('keydown', { code: 'KeyO' });
+            window.dispatchEvent(event);
+            cameraModeButton.textContent = 'ORBIT MODE';
+            cameraModeButton.classList.remove('fps-mode');
+            isOrbitMode = true;
+        }
+    });
+}
 
         function startLoading() {
             const statusText = document.getElementById('statusText');
@@ -610,6 +668,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             startLoading();
             initControlsMenu();
+            initDesktopCameraToggle();
         });
 
         // Handle orientation changes
