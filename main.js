@@ -970,6 +970,7 @@ function activateFPSControls() {
     camera.position.set(168, 2, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
+    camera.rotation.set(0, 0, 0);
 
     // Initialize player OBB when switching to FPS
     if (!playerOBB) {
