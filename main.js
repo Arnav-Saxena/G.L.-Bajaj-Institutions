@@ -180,7 +180,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(300, 105, 100);
 camera.lookAt(0, 0, 0);
-camera.zoom = 2;
+camera.zoom = 1;
 
 // --------------------- Renderer ---------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -200,6 +200,8 @@ orbitControls.maxPolarAngle = currentPolar;
 // Auto-Rotate
 orbitControls.autoRotate = true;
 orbitControls.autoRotateSpeed = -1.0; // Adjust speed as needed (default is 2.0)
+orbitControls.enableZoom = false;
+orbitControls.enablePan = false;
 
 
 
@@ -235,12 +237,12 @@ const playerFeetOffset = 0.05;   // Smaller offset to reduce bouncing
 
 // Initialize player OBB
 function initializePlayerOBB() {
-    const playerExtents = new THREE.Vector3(playerRadius, playerHeight/2, playerRadius);
+    const playerExtents = new THREE.Vector3(playerRadius, playerHeight / 2, playerRadius);
     // Player OBB center should be at feet + half height
     const playerFeetY = camera.position.y - cameraEyeHeight;
     const playerCenter = new THREE.Vector3(
-        camera.position.x, 
-        playerFeetY + playerHeight/2, 
+        camera.position.x,
+        playerFeetY + playerHeight / 2,
         camera.position.z
     );
     const playerRotation = new THREE.Euler(0, 0, 0);
@@ -253,8 +255,8 @@ function updatePlayerOBB() {
     if (playerOBB) {
         const playerFeetY = camera.position.y - cameraEyeHeight;
         playerOBB.center.set(
-            camera.position.x, 
-            playerFeetY + playerHeight/2, 
+            camera.position.x,
+            playerFeetY + playerHeight / 2,
             camera.position.z
         );
         playerOBB.updateAxes();
@@ -267,7 +269,7 @@ function checkHorizontalCollisionOBB(position) {
 
     const playerFeetY = position.y - cameraEyeHeight;
     const testOBB = new OBB(
-        new THREE.Vector3(position.x, playerFeetY + playerHeight/2, position.z),
+        new THREE.Vector3(position.x, playerFeetY + playerHeight / 2, position.z),
         playerOBB.extents.clone(),
         new THREE.Euler(0, 0, 0)
     );
@@ -290,7 +292,7 @@ function checkVerticalCollisionOBB(cameraPos, direction = 'down') {
 
     const playerFeetY = cameraPos.y - cameraEyeHeight;
     let testY;
-    
+
     if (direction === 'up') {
         // Check head collision - test slightly above player head
         testY = playerFeetY + playerHeight + 0.1;
@@ -376,24 +378,24 @@ function getValidMovementOBB(currentPos, desiredPos) {
 
     // Try reduced movement (for better sliding)
     const reductionFactors = [0.8, 0.6, 0.4, 0.2];
-    
+
     for (const factor of reductionFactors) {
         const reducedPos = new THREE.Vector3(
             currentPos.x + deltaX * factor,
             currentPos.y,
             currentPos.z + deltaZ * factor
         );
-        
+
         if (!checkHorizontalCollisionOBB(reducedPos)) {
             return reducedPos;
         }
-        
+
         // Try just X with reduced movement
         const reducedXPos = new THREE.Vector3(currentPos.x + deltaX * factor, currentPos.y, currentPos.z);
         if (!checkHorizontalCollisionOBB(reducedXPos)) {
             return reducedXPos;
         }
-        
+
         // Try just Z with reduced movement
         const reducedZPos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ * factor);
         if (!checkHorizontalCollisionOBB(reducedZPos)) {
@@ -696,7 +698,7 @@ function createMobileControls() {
             // MAI YAHAN HU
             camera.rotation.set(0, 0, 0);
             const playerCenter = camera.position.clone();
-            
+
             cameraModeButton.textContent = 'ORBIT';
         } else {
             activateOrbitControls();
@@ -771,6 +773,7 @@ function createMobileControls() {
 createMobileControls();
 
 // --------------------- FULLSCREEN BUTTON ---------------------
+
 function createFullscreenButton() {
     const fullscreenButton = document.createElement('div');
     fullscreenButton.style.cssText = `
@@ -1095,9 +1098,9 @@ loader.load('/model.glb',
                             const size = meshBox.getSize(new THREE.Vector3());
 
                             // If object is large enough and not likely to be a small detail, treat as collidable
-                            
-                                shouldAddToCollision = true;
-                                console.log(`Added auto-detected mesh: ${child.name || 'unnamed'} (size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)})`);
+
+                            shouldAddToCollision = true;
+                            console.log(`Added auto-detected mesh: ${child.name || 'unnamed'} (size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)})`);
 
                         }
                     }
@@ -1229,8 +1232,8 @@ function animate() {
                 canJump = true;
                 camera.position.y = downCheck.height;
                 if (isRunning && (!move.forward || !move.backward || !move.left || !move.right)) {
-                bunnyHopMultiplier = 1;
-            }
+                    bunnyHopMultiplier = 1;
+                }
             } else {
                 camera.position.y = nextY;
             }
