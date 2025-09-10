@@ -392,6 +392,177 @@
             text-shadow: 0 2px 8px rgba(144, 164, 174, 0.3);
         }
 
+        /* INITIAL CONTROLS POPUP */
+        #initialControlsPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #initialControlsPopup.show {
+            display: flex;
+        }
+
+        .initial-controls-content {
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid rgba(100, 181, 246, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .initial-popup-header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .initial-popup-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #64b5f6, #2196f3);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .initial-popup-subtitle {
+            font-size: 0.9rem;
+            color: #b0bec5;
+            font-weight: 300;
+        }
+
+        .initial-control-section {
+            margin-bottom: 20px;
+        }
+
+        .initial-section-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #90caf9;
+            display: flex;
+            align-items: center;
+        }
+
+        .initial-section-title::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: linear-gradient(135deg, #64b5f6, #2196f3);
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        .initial-control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .initial-control-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .initial-control-key {
+            background: rgba(100, 181, 246, 0.2);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 0.8rem;
+            min-width: 30px;
+            text-align: center;
+            color: #90caf9;
+            margin-right: 8px;
+        }
+
+        .initial-control-desc {
+            font-size: 0.85rem;
+            color: #e0e0e0;
+        }
+
+        .initial-popup-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .initial-popup-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            flex: 1;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .show-more-btn {
+            background: rgba(100, 181, 246, 0.2);
+            color: #90caf9;
+            border: 1px solid rgba(100, 181, 246, 0.3);
+        }
+
+        .show-more-btn:hover {
+            background: rgba(100, 181, 246, 0.3);
+            color: white;
+        }
+
+        /* Mobile adjustments for popup */
         @media (max-width: 768px) {
             .main-title {
                 font-size: 2.2rem;
@@ -407,6 +578,23 @@
 
             .footer-text {
                 font-size: 0.7rem;
+            }
+
+            .initial-controls-content {
+                padding: 20px;
+                max-width: 350px;
+            }
+
+            .initial-popup-title {
+                font-size: 1.2rem;
+            }
+
+            .initial-control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .initial-control-key {
+                min-width: 40px;
             }
         }
     </style>
@@ -442,6 +630,61 @@
 
         <div class="footer-text">
             Crafted by Rudransh | Controlled by Arnav
+        </div>
+    </div>
+
+    <!-- INITIAL CONTROLS POPUP -->
+    <div id="initialControlsPopup">
+        <div class="initial-controls-content">
+            <div class="initial-popup-header">
+                <div class="initial-popup-title">CAMPUS CONTROLS</div>
+                <div class="initial-popup-subtitle">Learn the basics to explore G.L. Bajaj Institutions</div>
+            </div>
+
+            <div class="initial-control-section">
+                <div class="initial-section-title">Movement</div>
+                <div class="initial-control-grid">
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">WASD</div>
+                        <div class="initial-control-desc">Move Around</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">SPACE</div>
+                        <div class="initial-control-desc">Jump</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">SHIFT</div>
+                        <div class="initial-control-desc">Sprint</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">MOUSE</div>
+                        <div class="initial-control-desc">Look Around</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="initial-control-section">
+                <div class="initial-section-title">Camera Modes</div>
+                <div class="initial-control-grid">
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">O</div>
+                        <div class="initial-control-desc">Orbit View</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">P</div>
+                        <div class="initial-control-desc">First Person</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="initial-popup-buttons">
+                <button class="initial-popup-btn start-btn" id="startExploringBtn">
+                    START EXPLORING
+                </button>
+                <button class="initial-popup-btn show-more-btn" id="showMoreControlsBtn">
+                    VIEW ALL
+                </button>
+            </div>
         </div>
     </div>
 
@@ -556,29 +799,77 @@
             });
         }
 
+        // Initial Controls Popup Logic
+        function initInitialControlsPopup() {
+            const initialControlsPopup = document.getElementById('initialControlsPopup');
+            const startExploringBtn = document.getElementById('startExploringBtn');
+            const showMoreControlsBtn = document.getElementById('showMoreControlsBtn');
+            const controlsMenu = document.getElementById('controlsMenu');
+
+            // Show initial popup
+            function showInitialPopup() {
+                initialControlsPopup.classList.add('show');
+            }
+
+            // Hide initial popup
+            function hideInitialPopup() {
+                initialControlsPopup.classList.remove('show');
+            }
+
+            // Start exploring button
+            startExploringBtn.addEventListener('click', () => {
+                hideInitialPopup();
+            });
+
+            // Show more controls button
+            showMoreControlsBtn.addEventListener('click', () => {
+                hideInitialPopup();
+                // Small delay to show the full controls menu
+                setTimeout(() => {
+                    controlsMenu.classList.add('show');
+                }, 200);
+            });
+
+            // Close on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && initialControlsPopup.classList.contains('show')) {
+                    hideInitialPopup();
+                }
+            });
+
+            // Close on background click
+            initialControlsPopup.addEventListener('click', (e) => {
+                if (e.target === initialControlsPopup) {
+                    hideInitialPopup();
+                }
+            });
+
+            return { showInitialPopup };
+        }
+
         // Desktop Camera Mode Toggle Logic
         function initDesktopCameraToggle() {
-    const cameraModeButton = document.getElementById('desktopCameraModeButton');
-    let isOrbitMode = true; // Track mode locally
-    
-    cameraModeButton.addEventListener('click', () => {
-        if (isOrbitMode) {
-            // Switch to FPS mode
-            const event = new KeyboardEvent('keydown', { code: 'KeyP' });
-            window.dispatchEvent(event);
-            cameraModeButton.textContent = 'FPS MODE';
-            cameraModeButton.classList.add('fps-mode');
-            isOrbitMode = false;
-        } else {
-            // Switch to Orbit mode
-            const event = new KeyboardEvent('keydown', { code: 'KeyO' });
-            window.dispatchEvent(event);
-            cameraModeButton.textContent = 'ORBIT MODE';
-            cameraModeButton.classList.remove('fps-mode');
-            isOrbitMode = true;
+            const cameraModeButton = document.getElementById('desktopCameraModeButton');
+            let isOrbitMode = true; // Track mode locally
+            
+            cameraModeButton.addEventListener('click', () => {
+                if (isOrbitMode) {
+                    // Switch to FPS mode
+                    const event = new KeyboardEvent('keydown', { code: 'KeyP' });
+                    window.dispatchEvent(event);
+                    cameraModeButton.textContent = 'FPS MODE';
+                    cameraModeButton.classList.add('fps-mode');
+                    isOrbitMode = false;
+                } else {
+                    // Switch to Orbit mode
+                    const event = new KeyboardEvent('keydown', { code: 'KeyO' });
+                    window.dispatchEvent(event);
+                    cameraModeButton.textContent = 'ORBIT MODE';
+                    cameraModeButton.classList.remove('fps-mode');
+                    isOrbitMode = true;
+                }
+            });
         }
-    });
-}
 
         function startLoading() {
             const statusText = document.getElementById('statusText');
@@ -586,6 +877,7 @@
             const progressPercent = document.getElementById('progressPercent');
             const loadingScreen = document.getElementById('loadingScreen');
             const mainContent = document.getElementById('mainContent');
+            const { showInitialPopup } = initInitialControlsPopup();
 
             const messages = [
                 'Initializing Campus Experience...',
@@ -652,6 +944,10 @@
 
                         setTimeout(() => {
                             loadingScreen.style.display = 'none';
+                            // Show initial controls popup after loading is complete
+                            setTimeout(() => {
+                                showInitialPopup();
+                            }, 500);
                         }, 800);
                     }, 500);
                 }
