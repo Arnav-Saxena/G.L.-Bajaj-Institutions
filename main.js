@@ -967,9 +967,9 @@ function activateFPSControls() {
     orbitControls.enabled = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
-    camera.position.set(150, 2, 0);
+    camera.position.set(168, 2, 0);
     console.log('FPS Controls Activated');
-    camera.rotation.set(0, 45, 0);
+    camera.lookAt(0, 0, 0);
 
     // Initialize player OBB when switching to FPS
     if (!playerOBB) {
@@ -1203,7 +1203,7 @@ function calculateCameraShake(delta) {
 
     // Calculate total shake intensity
     let totalIntensity = cameraShake.intensity;
-    
+
     // Add landing shake
     if (cameraShake.currentLandShake > 0) {
         totalIntensity += cameraShake.currentLandShake;
@@ -1265,14 +1265,14 @@ function checkLandingShake() {
     if (!movementState.wasOnGround && canJump && verticalVelocity <= 0) {
         // Calculate landing intensity based on falling velocity
         const fallVelocity = Math.abs(movementState.landingVelocity);
-        
+
         if (fallVelocity > 2) { // Only shake for significant falls
             const intensity = Math.min(fallVelocity * 0.01, cameraShake.landShakeIntensity);
-            
+
             // Trigger landing shake
             cameraShake.currentLandShake = intensity;
             cameraShake.landShakeDecay = intensity / cameraShake.landShakeDuration;
-            
+
             console.log(`Landing shake triggered - velocity: ${fallVelocity.toFixed(2)}, intensity: ${intensity.toFixed(3)}`);
         }
     }
@@ -1292,7 +1292,7 @@ function animate() {
     if (activeControls === fpsControls) {
         // Store original camera position before any modifications
         const originalPosition = camera.position.clone();
-        
+
         // Update player OBB position
         updatePlayerOBB();
 
@@ -1381,7 +1381,7 @@ function animate() {
         checkLandingShake();
         updateMovementShake();
         calculateCameraShake(delta);
-        
+
         // Apply shake offset ONLY for rendering
         if (cameraShake.shakeOffset.lengthSq() > 0) {
             camera.position.add(cameraShake.shakeOffset);
@@ -1392,7 +1392,7 @@ function animate() {
     }
 
     renderer.render(scene, camera);
-    
+
     // CRITICAL: Remove shake offset after rendering so collision detection uses clean position
     if (activeControls === fpsControls && cameraShake.shakeOffset.lengthSq() > 0) {
         camera.position.sub(cameraShake.shakeOffset);
