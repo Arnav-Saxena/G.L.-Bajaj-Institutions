@@ -23,6 +23,7 @@
             border-radius: 8px;
         
             cursor: pointer;
+
             font-family: 'inter', sans-serif;
             font-weight: 500;
         }
@@ -233,6 +234,7 @@
             border-radius: 8px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
+                        font-size: 14px;
             font-weight: 500;
             transition: all 0.3s ease;
             display: block;
@@ -252,13 +254,14 @@
             background: rgba(76, 175, 80, 0.8);
             border: 2px solid rgba(76, 175, 80, 1);
             color: white;
-            padding: 5px 10px;
+            padding: 5px;
             border-radius: 8px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
             transition: all 0.3s ease;
             display: block;
+                        font-size: 15px;
             min-width: 120px;
             text-align: center;
         }
@@ -1031,11 +1034,11 @@
                 if (!audio.paused) {
                     btn.classList.add('playing');
                     btn.setAttribute('aria-pressed', 'true');
-                    btn.textContent = '🔇';
+                    btn.textContent = '🔉';
                 } else {
                     btn.classList.remove('playing');
                     btn.setAttribute('aria-pressed', 'false');
-                    btn.textContent = '🔉';
+                    btn.textContent = '🔇';
                 }
             }
 
