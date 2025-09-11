@@ -12,7 +12,8 @@
         #audioToggleButton {
             position: absolute;
             top: 20px;
-            right: 220px;
+            right: 20px;
+                        height: 35px;
             /* sits between camera and controls buttons - adjust if needed */
             z-index: 10;
             background: rgba(76, 175, 80, 0.8);
@@ -23,7 +24,7 @@
             border-radius: 8px;
 
             cursor: pointer;
-            font-size: 14px;
+font-size: 14px;
             font-family: 'inter', sans-serif;
             font-weight: 500;
         }
@@ -74,7 +75,7 @@
             left: 20px;
             z-index: 10;
             color: white;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
             font-family: 'Orbitron', monospace;
         }
@@ -225,7 +226,8 @@
         #controlsMenuBtn {
             position: absolute;
             top: 20px;
-            right: 130px;
+            right: 187px;
+                        height: 35px;
             /* Moved left to make room for camera button */
             z-index: 10;
             background: rgba(33, 150, 243, 0.8);
@@ -239,6 +241,7 @@
             font-weight: 500;
             transition: all 0.3s ease;
             display: block;
+
         }
 
         #controlsMenuBtn:hover {
@@ -249,8 +252,9 @@
         /* Desktop Camera Mode Button */
         #desktopCameraModeButton {
             position: absolute;
+            height: 35px;
             top: 20px;
-            right: 20px;
+            right: 70px;
             z-index: 10;
             background: rgba(76, 175, 80, 0.8);
             border: 2px solid rgba(76, 175, 80, 1);
@@ -264,6 +268,7 @@
             display: block;
             font-size: 15px;
             text-align: center;
+                        min-width: 110px;
         }
 
         #desktopCameraModeButton:hover {
@@ -916,14 +921,14 @@
                     // Switch to FPS mode
                     const event = new KeyboardEvent('keydown', { code: 'KeyP' });
                     window.dispatchEvent(event);
-                    cameraModeButton.textContent = 'FPS MODE';
+                    cameraModeButton.textContent = 'FPS Mode';
                     cameraModeButton.classList.add('fps-mode');
                     isOrbitMode = false;
                 } else {
                     // Switch to Orbit mode
                     const event = new KeyboardEvent('keydown', { code: 'KeyO' });
                     window.dispatchEvent(event);
-                    cameraModeButton.textContent = 'ORBIT MODE';
+                    cameraModeButton.textContent = 'Orbit Mode';
                     cameraModeButton.classList.remove('fps-mode');
                     isOrbitMode = true;
                 }
