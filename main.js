@@ -177,9 +177,10 @@ loadingManager.onError = function (url) {
 
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(250, 45, 0);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(300, 105, 100);
 camera.lookAt(0, 0, 0);
+camera.zoom = 1;
 
 // --------------------- Renderer ---------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -190,8 +191,19 @@ document.body.appendChild(renderer.domElement);
 // --------------------- Controls ---------------------
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
-orbitControls.target.set(0, 1, 0);
+orbitControls.target.set(0, 0, 0);
+orbitControls.dampingFactor = 0.05;
 orbitControls.update();
+const currentPolar = orbitControls.getPolarAngle(); // phi - vertical angle
+orbitControls.minPolarAngle = currentPolar;
+orbitControls.maxPolarAngle = currentPolar;
+// Auto-Rotate
+orbitControls.autoRotate = true;
+orbitControls.autoRotateSpeed = -1.0; // Adjust speed as needed (default is 2.0)
+orbitControls.enableZoom = false;
+orbitControls.enablePan = false;
+
+
 
 const fpsControls = new PointerLockControls(camera, renderer.domElement);
 fpsControls.enabled = false;
@@ -225,12 +237,12 @@ const playerFeetOffset = 0.05;   // Smaller offset to reduce bouncing
 
 // Initialize player OBB
 function initializePlayerOBB() {
-    const playerExtents = new THREE.Vector3(playerRadius, playerHeight/2, playerRadius);
+    const playerExtents = new THREE.Vector3(playerRadius, playerHeight / 2, playerRadius);
     // Player OBB center should be at feet + half height
     const playerFeetY = camera.position.y - cameraEyeHeight;
     const playerCenter = new THREE.Vector3(
-        camera.position.x, 
-        playerFeetY + playerHeight/2, 
+        camera.position.x,
+        playerFeetY + playerHeight / 2,
         camera.position.z
     );
     const playerRotation = new THREE.Euler(0, 0, 0);
@@ -243,8 +255,8 @@ function updatePlayerOBB() {
     if (playerOBB) {
         const playerFeetY = camera.position.y - cameraEyeHeight;
         playerOBB.center.set(
-            camera.position.x, 
-            playerFeetY + playerHeight/2, 
+            camera.position.x,
+            playerFeetY + playerHeight / 2,
             camera.position.z
         );
         playerOBB.updateAxes();
@@ -257,7 +269,7 @@ function checkHorizontalCollisionOBB(position) {
 
     const playerFeetY = position.y - cameraEyeHeight;
     const testOBB = new OBB(
-        new THREE.Vector3(position.x, playerFeetY + playerHeight/2, position.z),
+        new THREE.Vector3(position.x, playerFeetY + playerHeight / 2, position.z),
         playerOBB.extents.clone(),
         new THREE.Euler(0, 0, 0)
     );
@@ -280,7 +292,7 @@ function checkVerticalCollisionOBB(cameraPos, direction = 'down') {
 
     const playerFeetY = cameraPos.y - cameraEyeHeight;
     let testY;
-    
+
     if (direction === 'up') {
         // Check head collision - test slightly above player head
         testY = playerFeetY + playerHeight + 0.1;
@@ -366,24 +378,24 @@ function getValidMovementOBB(currentPos, desiredPos) {
 
     // Try reduced movement (for better sliding)
     const reductionFactors = [0.8, 0.6, 0.4, 0.2];
-    
+
     for (const factor of reductionFactors) {
         const reducedPos = new THREE.Vector3(
             currentPos.x + deltaX * factor,
             currentPos.y,
             currentPos.z + deltaZ * factor
         );
-        
+
         if (!checkHorizontalCollisionOBB(reducedPos)) {
             return reducedPos;
         }
-        
+
         // Try just X with reduced movement
         const reducedXPos = new THREE.Vector3(currentPos.x + deltaX * factor, currentPos.y, currentPos.z);
         if (!checkHorizontalCollisionOBB(reducedXPos)) {
             return reducedXPos;
         }
-        
+
         // Try just Z with reduced movement
         const reducedZPos = new THREE.Vector3(currentPos.x, currentPos.y, currentPos.z + deltaZ * factor);
         if (!checkHorizontalCollisionOBB(reducedZPos)) {
@@ -684,9 +696,8 @@ function createMobileControls() {
         if (activeControls === orbitControls) {
             activateFPSControls();
             // MAI YAHAN HU
-            camera.rotation.set(0, 0, 0);
             const playerCenter = camera.position.clone();
-            
+
             cameraModeButton.textContent = 'ORBIT';
         } else {
             activateOrbitControls();
@@ -761,6 +772,7 @@ function createMobileControls() {
 createMobileControls();
 
 // --------------------- FULLSCREEN BUTTON ---------------------
+
 function createFullscreenButton() {
     const fullscreenButton = document.createElement('div');
     fullscreenButton.style.cssText = `
@@ -955,8 +967,10 @@ function activateFPSControls() {
     orbitControls.enabled = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
-    camera.position.set(150, 5, 0);
+    camera.position.set(168, 2, 0);
     console.log('FPS Controls Activated');
+    camera.lookAt(0, 0, 0);
+    camera.rotation.set(0, Math.PI / 2, 0);
 
     // Initialize player OBB when switching to FPS
     if (!playerOBB) {
@@ -1085,9 +1099,9 @@ loader.load('/model.glb',
                             const size = meshBox.getSize(new THREE.Vector3());
 
                             // If object is large enough and not likely to be a small detail, treat as collidable
-                            
-                                shouldAddToCollision = true;
-                                console.log(`Added auto-detected mesh: ${child.name || 'unnamed'} (size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)})`);
+
+                            shouldAddToCollision = true;
+                            console.log(`Added auto-detected mesh: ${child.name || 'unnamed'} (size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)})`);
 
                         }
                     }
@@ -1146,6 +1160,129 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+
+
+// CAMERA SHAKING
+
+// SAFE Camera shake system that won't interfere with collision detection
+// This uses a separate shake camera that renders the scene with offset
+
+// Camera shake variables
+let cameraShake = {
+    enabled: true,
+    intensity: 0,
+    frequency: 0,
+    time: 0,
+    walkShakeIntensity: 0.04,
+    sprintShakeIntensity: 0.08,
+    walkShakeFrequency: 8,
+    sprintShakeFrequency: 12,
+    landShakeIntensity: 0.07,
+    landShakeDuration: 0.4,
+    currentLandShake: 0,
+    landShakeDecay: 0,
+    shakeOffset: new THREE.Vector3()
+};
+
+// Track movement state for shake
+let movementState = {
+    isMoving: false,
+    wasMoving: false,
+    wasOnGround: false,
+    landingVelocity: 0
+};
+
+// Calculate camera shake offset (doesn't modify camera position)
+function calculateCameraShake(delta) {
+    if (!cameraShake.enabled || activeControls !== fpsControls) {
+        cameraShake.shakeOffset.set(0, 0, 0);
+        return;
+    }
+
+    // Update shake time
+    cameraShake.time += delta;
+
+    // Calculate total shake intensity
+    let totalIntensity = cameraShake.intensity;
+
+    // Add landing shake
+    if (cameraShake.currentLandShake > 0) {
+        totalIntensity += cameraShake.currentLandShake;
+        cameraShake.currentLandShake -= cameraShake.landShakeDecay * delta;
+        if (cameraShake.currentLandShake < 0) {
+            cameraShake.currentLandShake = 0;
+        }
+    }
+
+    if (totalIntensity > 0) {
+        // Generate shake offset using sine waves for smooth motion
+        const shakeX = Math.sin(cameraShake.time * cameraShake.frequency) * totalIntensity;
+        const shakeY = Math.sin(cameraShake.time * cameraShake.frequency * 1.3) * totalIntensity * 0.7;
+        const shakeZ = Math.cos(cameraShake.time * cameraShake.frequency * 0.8) * totalIntensity * 0.5;
+
+        cameraShake.shakeOffset.set(shakeX, shakeY, shakeZ);
+    } else {
+        cameraShake.shakeOffset.set(0, 0, 0);
+    }
+}
+
+// Update movement-based camera shake
+function updateMovementShake() {
+    if (activeControls !== fpsControls) {
+        cameraShake.intensity = 0;
+        cameraShake.frequency = 0;
+        return;
+    }
+
+    // Check if player is moving
+    movementState.isMoving = move.forward || move.backward || move.left || move.right;
+
+    if (movementState.isMoving && canJump) { // Only shake when on ground and moving
+        if (isRunning) {
+            // Sprint shake
+            cameraShake.intensity = cameraShake.sprintShakeIntensity;
+            cameraShake.frequency = cameraShake.sprintShakeFrequency;
+        } else {
+            // Walk shake
+            cameraShake.intensity = cameraShake.walkShakeIntensity;
+            cameraShake.frequency = cameraShake.walkShakeFrequency;
+        }
+    } else {
+        // Gradually reduce shake when not moving
+        cameraShake.intensity *= 0.9;
+        if (cameraShake.intensity < 0.001) {
+            cameraShake.intensity = 0;
+        }
+    }
+
+    movementState.wasMoving = movementState.isMoving;
+}
+
+// Detect landing and trigger landing shake
+function checkLandingShake() {
+    if (activeControls !== fpsControls) return;
+
+    // Check if player just landed
+    if (!movementState.wasOnGround && canJump && verticalVelocity <= 0) {
+        // Calculate landing intensity based on falling velocity
+        const fallVelocity = Math.abs(movementState.landingVelocity);
+
+        if (fallVelocity > 2) { // Only shake for significant falls
+            const intensity = Math.min(fallVelocity * 0.01, cameraShake.landShakeIntensity);
+
+            // Trigger landing shake
+            cameraShake.currentLandShake = intensity;
+            cameraShake.landShakeDecay = intensity / cameraShake.landShakeDuration;
+
+            console.log(`Landing shake triggered - velocity: ${fallVelocity.toFixed(2)}, intensity: ${intensity.toFixed(3)}`);
+        }
+    }
+
+    // Store landing velocity for next frame
+    movementState.landingVelocity = verticalVelocity;
+    movementState.wasOnGround = canJump;
+}
+
 // --------------------- Animation Loop with FIXED OBB Collision ---------------------
 const clock = new THREE.Clock();
 
@@ -1154,6 +1291,9 @@ function animate() {
     const delta = clock.getDelta();
 
     if (activeControls === fpsControls) {
+        // Store original camera position before any modifications
+        const originalPosition = camera.position.clone();
+
         // Update player OBB position
         updatePlayerOBB();
 
@@ -1219,8 +1359,8 @@ function animate() {
                 canJump = true;
                 camera.position.y = downCheck.height;
                 if (isRunning && (!move.forward || !move.backward || !move.left || !move.right)) {
-                bunnyHopMultiplier = 1;
-            }
+                    bunnyHopMultiplier = 1;
+                }
             } else {
                 camera.position.y = nextY;
             }
@@ -1236,11 +1376,28 @@ function animate() {
                 bunnyHopMultiplier = 1;
             }
         }
+
+        // ALL COLLISION DETECTION IS NOW COMPLETE
+        // Update camera shake system (this won't affect collision)
+        checkLandingShake();
+        updateMovementShake();
+        calculateCameraShake(delta);
+
+        // Apply shake offset ONLY for rendering
+        if (cameraShake.shakeOffset.lengthSq() > 0) {
+            camera.position.add(cameraShake.shakeOffset);
+        }
+
     } else {
         orbitControls.update();
     }
 
     renderer.render(scene, camera);
+
+    // CRITICAL: Remove shake offset after rendering so collision detection uses clean position
+    if (activeControls === fpsControls && cameraShake.shakeOffset.lengthSq() > 0) {
+        camera.position.sub(cameraShake.shakeOffset);
+    }
 }
 
 // Start animation loop
