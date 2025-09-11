@@ -9,6 +9,47 @@
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
+        #audioToggleButton {
+            position: absolute;
+            top: 20px;
+            right: 17.5%;
+            /* sits between camera and controls buttons - adjust if needed */
+            z-index: 10;
+           background: rgba(76, 175, 80, 0.8);
+            border: 2px solid rgba(76, 175, 80, 1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 15px;
+            border-radius: 8px;
+        
+            cursor: pointer;
+            font-family: 'inter', sans-serif;
+            font-weight: 600;
+        }
+
+        #audioToggleButton:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+        #audioToggleButton:active {
+            background: rgb(70, 161, 73);
+            transform: scale(1);
+        }
+
+        #audioToggleButton.playing {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            border-color: rgba(255, 255, 255, 0.14);
+        }
+
+        @media (max-width:768px) {
+            #audioToggleButton {
+                right: 10px;
+                top: 60px;
+            }
+
+            /* avoid overlap on mobile */
+        }
+
         body {
             margin: 0;
             overflow: hidden;
@@ -182,7 +223,8 @@
         #controlsMenuBtn {
             position: absolute;
             top: 20px;
-            right: 160px; /* Moved left to make room for camera button */
+            right: 160px;
+            /* Moved left to make room for camera button */
             z-index: 10;
             background: rgba(33, 150, 243, 0.8);
             border: 2px solid rgba(33, 150, 243, 1);
@@ -426,8 +468,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
@@ -435,6 +482,7 @@
                 transform: translateY(-30px) scale(0.95);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0) scale(1);
                 opacity: 1;
@@ -601,6 +649,14 @@
 </head>
 
 <body>
+
+    <!-- audio -->
+    <audio id="bgAudio" src="bellpianoglbinstitutions.mp3" loop preload="auto"></audio>
+    <!-- audio toggle button -->
+    <button id="audioToggleButton" aria-pressed="false" title="toggle background music">
+        Play Music
+    </button>
+
     <!-- Rotation Message for Portrait Mode -->
     <div id="rotationMessage">
         <div class="rotate-icon">📱↻</div>
@@ -851,7 +907,7 @@
         function initDesktopCameraToggle() {
             const cameraModeButton = document.getElementById('desktopCameraModeButton');
             let isOrbitMode = true; // Track mode locally
-            
+
             cameraModeButton.addEventListener('click', () => {
                 if (isOrbitMode) {
                     // Switch to FPS mode
@@ -966,7 +1022,57 @@
             initControlsMenu();
             initDesktopCameraToggle();
         });
+        (function () {
+            const audio = document.getElementById('bgAudio');
+            const btn = document.getElementById('audioToggleButton');
 
+            // state - relies on audio.paused for truth
+            function updateButton() {
+                if (!audio.paused) {
+                    btn.classList.add('playing');
+                    btn.setAttribute('aria-pressed', 'true');
+                    btn.textContent = 'Mute';
+                } else {
+                    btn.classList.remove('playing');
+                    btn.setAttribute('aria-pressed', 'false');
+                    btn.textContent = 'Play Music';
+                }
+            }
+
+            // toggle on click - this is a user gesture so play() will be allowed
+            btn.addEventListener('click', async () => {
+                try {
+                    if (audio.paused) {
+                        await audio.play(); // play on user gesture
+                    } else {
+                        audio.pause();
+                        audio.currentTime = 0; // optional - reset so it restarts clean next play
+                    }
+                } catch (err) {
+                    // some browsers might block - fallback is to set muted and play
+                    console.warn('audio play failed -', err);
+                }
+                updateButton();
+            });
+
+            // start state
+            updateButton();
+
+            // optionally - start music automatically when the user clicks "start exploring"
+            const startExploringBtn = document.getElementById('startExploringBtn');
+            if (startExploringBtn) {
+                startExploringBtn.addEventListener('click', async () => {
+                    if (audio.paused) {
+                        try { await audio.play(); } catch (e) { /* ignore */ }
+                        updateButton();
+                    }
+                });
+            }
+
+            // keep button label in sync if audio ended or paused externally
+            audio.addEventListener('play', updateButton);
+            audio.addEventListener('pause', updateButton);
+        })();
         // Handle orientation changes
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
