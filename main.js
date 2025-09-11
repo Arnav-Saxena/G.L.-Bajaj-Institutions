@@ -782,7 +782,7 @@ function createFullscreenButton() {
         left: 50%;
         transform: translateX(-50%);
         width: 120px;
-        height: 45px;
+        height: 30px;
         background: rgba(33, 150, 243, 0.9);
         border: 2px solid rgba(33, 150, 243, 1);
         border-radius: 25px;
@@ -790,7 +790,7 @@ function createFullscreenButton() {
         align-items: center;
         justify-content: center;
         color: white;
-        font-weight: bold;
+        font-weight: 500;
         font-size: 14px;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         cursor: pointer;
