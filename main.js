@@ -178,9 +178,8 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(300, 105, 100);
+camera.position.set(250, 95, 50);
 camera.lookAt(0, 0, 0);
-camera.zoom = 1;
 
 // --------------------- Renderer ---------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -701,6 +700,8 @@ function createMobileControls() {
             cameraModeButton.textContent = 'ORBIT';
         } else {
             activateOrbitControls();
+            
+            
             cameraModeButton.textContent = 'CAM';
         }
     }, { passive: false });
@@ -961,6 +962,8 @@ function activateOrbitControls() {
     if (document.getElementById("cameraView")) {
         document.getElementById("cameraView").value = "orbit";
     }
+    camera.position.set(270, 95, 70);
+    camera.lookAt(0, 0, 0);
 }
 
 function activateFPSControls() {
