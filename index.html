@@ -12,18 +12,18 @@
         #audioToggleButton {
             position: absolute;
             top: 20px;
-            right: 235px;
+            right: 220px;
             /* sits between camera and controls buttons - adjust if needed */
             z-index: 10;
-           background: rgba(76, 175, 80, 0.8);
+            background: rgba(76, 175, 80, 0.8);
             border: 2px solid rgba(76, 175, 80, 1);
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.08);
             padding: 5px 10px;
             border-radius: 8px;
-        
-            cursor: pointer;
 
+            cursor: pointer;
+            font-size: 14px;
             font-family: 'inter', sans-serif;
             font-weight: 500;
         }
@@ -32,6 +32,7 @@
             background: rgba(76, 175, 80, 1);
             transform: scale(1.05);
         }
+
         #audioToggleButton:active {
             background: rgb(70, 161, 73);
             transform: scale(1);
@@ -224,17 +225,17 @@
         #controlsMenuBtn {
             position: absolute;
             top: 20px;
-            right: 150px;
+            right: 130px;
             /* Moved left to make room for camera button */
             z-index: 10;
             background: rgba(33, 150, 243, 0.8);
             border: 2px solid rgba(33, 150, 243, 1);
             color: white;
             padding: 5px 10px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
-                        font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
             transition: all 0.3s ease;
             display: block;
@@ -254,15 +255,14 @@
             background: rgba(76, 175, 80, 0.8);
             border: 2px solid rgba(76, 175, 80, 1);
             color: white;
-            padding: 5px;
-            border-radius: 8px;
+            padding: 5px 10px;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
             transition: all 0.3s ease;
             display: block;
-                        font-size: 15px;
-            min-width: 120px;
+            font-size: 15px;
             text-align: center;
         }
 
@@ -823,7 +823,7 @@
         <button id="controlsMenuBtn">Controls</button>
 
         <!-- Desktop Camera Mode Button -->
-        <button id="desktopCameraModeButton">ORBIT MODE</button>
+        <button id="desktopCameraModeButton">Orbit Mode</button>
     </div>
 
     <script>
