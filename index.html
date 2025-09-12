@@ -923,10 +923,11 @@
             const startExploringBtn = document.getElementById('startExploringBtn');
             const showMoreControlsBtn = document.getElementById('showMoreControlsBtn');
             const controlsMenu = document.getElementById('controlsMenu');
-
             // Show initial popup
-            function showInitialPopup() {
-                initialControlsPopup.classList.add('show');
+            if (!(/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)) && window.innerWidth > 768) {
+                function showInitialPopup() {
+                    initialControlsPopup.classList.add('show');
+                }
             }
 
             // Hide initial popup
