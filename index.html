@@ -9,11 +9,66 @@
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
+        /* ---- default: keep rotation overlay hidden in landscape ---- */
+        #rotationMessage {
+            display: none;
+        }
+
+        /* ---- portrait-mode: black overlay + show rotate.png ---- */
+        @media screen and (orientation: portrait) {
+            body {
+                background: black !important;
+                color: white !important;
+                overflow: hidden;
+            }
+
+            /* hide everything by default */
+            * {
+                visibility: hidden;
+            }
+
+            /* make the rotation overlay and its children visible */
+            #rotationMessage,
+            #rotationMessage * {
+                visibility: visible;
+            }
+
+            /* full-screen centered overlay */
+            #rotationMessage {
+                display: flex;
+                position: fixed;
+                inset: 0;
+                background: black;
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            /* image styling - replace rotate.png with your file (already named rotate.png) */
+            #rotationMessage img {
+                max-width: 60vw;
+                height: auto;
+                margin-bottom: 18px;
+                display: block;
+            }
+
+            /* make sure text is readable */
+            #rotationMessage h2,
+            #rotationMessage p,
+            #rotationMessage .rotate-icon {
+                color: #ffffff;
+                -webkit-text-fill-color: #ffffff;
+            }
+        }
+
         #audioToggleButton {
             position: absolute;
             top: 20px;
             right: 20px;
-                        height: 35px;
+            height: 35px;
             /* sits between camera and controls buttons - adjust if needed */
             z-index: 10;
             background: rgba(76, 175, 80, 0.8);
@@ -24,7 +79,7 @@
             border-radius: 8px;
 
             cursor: pointer;
-font-size: 14px;
+            font-size: 14px;
             font-family: 'inter', sans-serif;
             font-weight: 500;
         }
@@ -227,7 +282,7 @@ font-size: 14px;
             position: absolute;
             top: 20px;
             right: 187px;
-                        height: 35px;
+            height: 35px;
             /* Moved left to make room for camera button */
             z-index: 10;
             background: rgba(33, 150, 243, 0.8);
@@ -266,7 +321,7 @@ font-size: 14px;
             display: block;
             font-size: 15px;
             text-align: center;
-                        min-width: 110px;
+            min-width: 110px;
         }
 
         #desktopCameraModeButton:hover {
@@ -664,7 +719,9 @@ font-size: 14px;
 
     <!-- Rotation Message for Portrait Mode -->
     <div id="rotationMessage">
-        <div class="rotate-icon">📱↻</div>
+        <!-- added image - rotate.png should be in the same folder -->
+        <img src="rotate.png" alt="please-rotate-your-device">
+        <div class="rotate-icon"></div>
         <h2>Please Rotate Your Device</h2>
         <p>This experience is optimized for landscape mode.<br>
             Please rotate your device horizontally for the best experience.</p>
