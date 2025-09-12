@@ -914,6 +914,7 @@ document.addEventListener('click', () => {
 let activeControls = orbitControls;
 
 function activateOrbitControls() {
+    camera.position.set(300, 105, 100);
     fpsControls.unlock && fpsControls.unlock();
     fpsControls.enabled = false;
     orbitControls.enabled = true;
