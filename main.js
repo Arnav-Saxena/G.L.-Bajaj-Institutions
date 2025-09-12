@@ -489,10 +489,10 @@ function createMobileControls() {
     const jumpButton = document.createElement('div');
     jumpButton.style.cssText = `
         position: absolute;
-        bottom: 120px;
-        right: 30px;
-        width: 80px;
-        height: 80px;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
         background: rgba(76, 175, 80, 0.8);
         border: 3px solid rgba(76, 175, 80, 1);
         border-radius: 50%;
@@ -513,10 +513,10 @@ function createMobileControls() {
     const sprintButton = document.createElement('div');
     sprintButton.style.cssText = `
         position: absolute;
-        bottom: 30px;
-        right: 30px;
-        width: 80px;
-        height: 80px;
+        bottom: 20px;
+        right: 100px;
+        width: 60px;
+        height: 60px;
         background: rgba(255, 152, 0, 0.8);
         border: 3px solid rgba(255, 152, 0, 1);
         border-radius: 50%;
@@ -533,34 +533,10 @@ function createMobileControls() {
     `;
     sprintButton.textContent = 'SPRINT';
 
-    // Camera mode toggle for mobile
-    const cameraModeButton = document.createElement('div');
-    cameraModeButton.style.cssText = `
-        position: absolute;
-        top: 120px;
-        right: 130px;
-        width: 60px;
-        height: 40px;
-        background: rgba(33, 150, 243, 0.8);
-        border: 2px solid rgba(33, 150, 243, 1);
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 10px;
-        pointer-events: auto;
-        touch-action: none;
-        user-select: none;
-        font-family: 'Inter', sans-serif;
-    `;
-    cameraModeButton.textContent = 'CAM';
-
+    
     controlsContainer.appendChild(joystickContainer);
     controlsContainer.appendChild(jumpButton);
     controlsContainer.appendChild(sprintButton);
-    controlsContainer.appendChild(cameraModeButton);
     document.body.appendChild(controlsContainer);
 
     // Joystick Controls
@@ -690,21 +666,6 @@ function createMobileControls() {
     sprintButton.addEventListener('mousedown', handleSprintStart);
     sprintButton.addEventListener('mouseup', handleSprintEnd);
 
-    // Camera Mode Button
-    cameraModeButton.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (activeControls === orbitControls) {
-            activateFPSControls();
-            // MAI YAHAN HU
-            const playerCenter = camera.position.clone();
-
-            cameraModeButton.textContent = 'ORBIT';
-        } else {
-            activateOrbitControls();
-            cameraModeButton.textContent = 'CAM';
-        }
-    }, { passive: false });
-
     // Touch look controls for camera (when in FPS mode)
     let touchLookActive = false;
     let lastTouchX = 0, lastTouchY = 0;
@@ -781,7 +742,7 @@ function createFullscreenButton() {
         left: 50%;
         transform: translateX(-50%);
         width: 120px;
-        height: 45px;
+        height: 35px;
         background: rgba(33, 150, 243, 0.9);
         border: 2px solid rgba(33, 150, 243, 1);
         border-radius: 25px;
@@ -790,7 +751,7 @@ function createFullscreenButton() {
         justify-content: center;
         color: white;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 15px;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         cursor: pointer;
         user-select: none;
@@ -953,6 +914,7 @@ document.addEventListener('click', () => {
 let activeControls = orbitControls;
 
 function activateOrbitControls() {
+    camera.position.set(300, 105, 100);
     fpsControls.unlock && fpsControls.unlock();
     fpsControls.enabled = false;
     orbitControls.enabled = true;
@@ -970,7 +932,7 @@ function activateFPSControls() {
     camera.position.set(168, 2, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
-    camera.rotation.set(0, Math.PI / 2, 0);
+    camera.rotation.set(0, Math.PI/2, 0);
 
     // Initialize player OBB when switching to FPS
     if (!playerOBB) {

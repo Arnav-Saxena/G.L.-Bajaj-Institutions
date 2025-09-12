@@ -9,6 +9,105 @@
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
+        /* ---- default: keep rotation overlay hidden in landscape ---- */
+        #rotationMessage {
+            display: none;
+        }
+
+        /* ---- portrait-mode: black overlay + show rotate.png ---- */
+        @media screen and (orientation: portrait) {
+            body {
+                background: black !important;
+                color: white !important;
+                overflow: hidden;
+            }
+
+            /* hide everything by default */
+            * {
+                visibility: hidden;
+            }
+
+            /* make the rotation overlay and its children visible */
+            #rotationMessage,
+            #rotationMessage * {
+                visibility: visible;
+            }
+
+            /* full-screen centered overlay */
+            #rotationMessage {
+                display: flex;
+                position: fixed;
+                inset: 0;
+                background: black;
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            /* image styling - replace rotate.png with your file (already named rotate.png) */
+            #rotationMessage img {
+                max-width: 60vw;
+                height: auto;
+                margin-bottom: 18px;
+                display: block;
+            }
+
+            /* make sure text is readable */
+            #rotationMessage h2,
+            #rotationMessage p,
+            #rotationMessage .rotate-icon {
+                color: #ffffff;
+                -webkit-text-fill-color: #ffffff;
+            }
+        }
+
+        #audioToggleButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            height: 35px;
+            /* sits between camera and controls buttons - adjust if needed */
+            z-index: 10;
+            background: rgba(76, 175, 80, 0.8);
+            border: 2px solid rgba(76, 175, 80, 1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            padding: 5px 10px;
+            border-radius: 8px;
+
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'inter', sans-serif;
+            font-weight: 500;
+        }
+
+        #audioToggleButton:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+
+        #audioToggleButton:active {
+            background: rgb(70, 161, 73);
+            transform: scale(1);
+        }
+
+        #audioToggleButton.playing {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            border-color: rgba(255, 255, 255, 0.14);
+        }
+
+        @media (max-width:768px) {
+            #audioToggleButton {
+                right: 10px;
+                top: 60px;
+            }
+
+            /* avoid overlap on mobile */
+        }
+
         body {
             margin: 0;
             overflow: hidden;
@@ -27,12 +126,12 @@
 
         .top-left {
             position: absolute;
-            top: 20px;
+            top: 12px;
             left: 20px;
             z-index: 10;
             color: white;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 22px;
+            font-weight: 800;
             font-family: 'Orbitron', monospace;
         }
 
@@ -182,18 +281,21 @@
         #controlsMenuBtn {
             position: absolute;
             top: 20px;
-            right: 160px; /* Moved left to make room for camera button */
+            right: 187px;
+            height: 35px;
+            /* Moved left to make room for camera button */
             z-index: 10;
             background: rgba(33, 150, 243, 0.8);
             border: 2px solid rgba(33, 150, 243, 1);
             color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 5px 10px;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
+            font-size: 15px;
             font-weight: 500;
-            transition: all 0.3s ease;
             display: block;
+
         }
 
         #controlsMenuBtn:hover {
@@ -204,21 +306,22 @@
         /* Desktop Camera Mode Button */
         #desktopCameraModeButton {
             position: absolute;
+            height: 35px;
             top: 20px;
-            right: 20px;
+            right: 70px;
             z-index: 10;
             background: rgba(76, 175, 80, 0.8);
             border: 2px solid rgba(76, 175, 80, 1);
             color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 5px 10px;
+            border-radius: 10px;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
-            transition: all 0.3s ease;
             display: block;
-            min-width: 120px;
+            font-size: 15px;
             text-align: center;
+            min-width: 110px;
         }
 
         #desktopCameraModeButton:hover {
@@ -426,8 +529,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
@@ -435,6 +543,7 @@
                 transform: translateY(-30px) scale(0.95);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0) scale(1);
                 opacity: 1;
@@ -536,7 +645,6 @@
             font-family: 'Inter', sans-serif;
             font-weight: 500;
             font-size: 0.9rem;
-            transition: all 0.3s ease;
         }
 
         .start-btn {
@@ -601,9 +709,19 @@
 </head>
 
 <body>
+
+    <!-- audio -->
+    <audio id="bgAudio" src="bellpianoglbinstitutions.mp3" loop preload="auto"></audio>
+    <!-- audio toggle button -->
+    <button id="audioToggleButton" aria-pressed="false" title="toggle background music">
+        Play Music
+    </button>
+
     <!-- Rotation Message for Portrait Mode -->
     <div id="rotationMessage">
-        <div class="rotate-icon">📱↻</div>
+        <!-- added image - rotate.png should be in the same folder -->
+        <img src="rotate.png" alt="please-rotate-your-device">
+        <div class="rotate-icon"></div>
         <h2>Please Rotate Your Device</h2>
         <p>This experience is optimized for landscape mode.<br>
             Please rotate your device horizontally for the best experience.</p>
@@ -764,7 +882,7 @@
         <button id="controlsMenuBtn">Controls</button>
 
         <!-- Desktop Camera Mode Button -->
-        <button id="desktopCameraModeButton">ORBIT MODE</button>
+        <button id="desktopCameraModeButton">Orbit Mode</button>
     </div>
 
     <script>
@@ -805,10 +923,11 @@
             const startExploringBtn = document.getElementById('startExploringBtn');
             const showMoreControlsBtn = document.getElementById('showMoreControlsBtn');
             const controlsMenu = document.getElementById('controlsMenu');
-
             // Show initial popup
-            function showInitialPopup() {
-                initialControlsPopup.classList.add('show');
+            if (!(/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)) && window.innerWidth > 768) {
+                function showInitialPopup() {
+                    initialControlsPopup.classList.add('show');
+                }
             }
 
             // Hide initial popup
@@ -851,20 +970,20 @@
         function initDesktopCameraToggle() {
             const cameraModeButton = document.getElementById('desktopCameraModeButton');
             let isOrbitMode = true; // Track mode locally
-            
+
             cameraModeButton.addEventListener('click', () => {
                 if (isOrbitMode) {
                     // Switch to FPS mode
                     const event = new KeyboardEvent('keydown', { code: 'KeyP' });
                     window.dispatchEvent(event);
-                    cameraModeButton.textContent = 'FPS MODE';
+                    cameraModeButton.textContent = 'FPS Mode';
                     cameraModeButton.classList.add('fps-mode');
                     isOrbitMode = false;
                 } else {
                     // Switch to Orbit mode
                     const event = new KeyboardEvent('keydown', { code: 'KeyO' });
                     window.dispatchEvent(event);
-                    cameraModeButton.textContent = 'ORBIT MODE';
+                    cameraModeButton.textContent = 'Orbit Mode';
                     cameraModeButton.classList.remove('fps-mode');
                     isOrbitMode = true;
                 }
@@ -966,7 +1085,57 @@
             initControlsMenu();
             initDesktopCameraToggle();
         });
+        (function () {
+            const audio = document.getElementById('bgAudio');
+            const btn = document.getElementById('audioToggleButton');
 
+            // state - relies on audio.paused for truth
+            function updateButton() {
+                if (!audio.paused) {
+                    btn.classList.add('playing');
+                    btn.setAttribute('aria-pressed', 'true');
+                    btn.textContent = '🔉';
+                } else {
+                    btn.classList.remove('playing');
+                    btn.setAttribute('aria-pressed', 'false');
+                    btn.textContent = '🔇';
+                }
+            }
+
+            // toggle on click - this is a user gesture so play() will be allowed
+            btn.addEventListener('click', async () => {
+                try {
+                    if (audio.paused) {
+                        await audio.play(); // play on user gesture
+                    } else {
+                        audio.pause();
+                        audio.currentTime = 0; // optional - reset so it restarts clean next play
+                    }
+                } catch (err) {
+                    // some browsers might block - fallback is to set muted and play
+                    console.warn('audio play failed -', err);
+                }
+                updateButton();
+            });
+
+            // start state
+            updateButton();
+
+            // optionally - start music automatically when the user clicks "start exploring"
+            const startExploringBtn = document.getElementById('startExploringBtn');
+            if (startExploringBtn) {
+                startExploringBtn.addEventListener('click', async () => {
+                    if (audio.paused) {
+                        try { await audio.play(); } catch (e) { /* ignore */ }
+                        updateButton();
+                    }
+                });
+            }
+
+            // keep button label in sync if audio ended or paused externally
+            audio.addEventListener('play', updateButton);
+            audio.addEventListener('pause', updateButton);
+        })();
         // Handle orientation changes
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
@@ -976,6 +1145,7 @@
         });
     </script>
     <script type="module" src="/main.js"></script>
+
 </body>
 
 </html>
