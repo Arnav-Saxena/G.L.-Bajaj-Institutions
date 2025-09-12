@@ -44,4 +44,3 @@ Every single element, from **balconies to buildings**, was manually modeled and 
 ##  Contributors  
 - **Rudransh Bhardwaj** → Three.js, Blender modeling, HTML/CSS  
 - **Arnav Saxena** → Three.js backend, HTML/CSS  
--
