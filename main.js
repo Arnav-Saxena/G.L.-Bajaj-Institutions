@@ -5,6 +5,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    window.DEBUG_COLLIDERS = false;  // Disable debug meshes on mobile
+    window.DEBUG_COLLISION_LOG = false; // Disable collision logs
+}
+
 // ✅ FIXED OBB (Oriented Bounding Box) Class - Properly transforms AABB to OBB
 class OBB {
     constructor(center, extents, rotation) {
@@ -192,7 +197,7 @@ document.body.appendChild(renderer.domElement);
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     renderer.setPixelRatio(window.devicePixelRatio * 0.75);
 } else {
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(window.devicePixelRatio * 1);
 }
 
 // then set size
