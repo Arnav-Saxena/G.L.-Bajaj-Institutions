@@ -187,6 +187,14 @@ camera.position.set(300, 105, 100);
 camera.lookAt(0, 0, 0);
 camera.zoom = 1;
 
+if (isMobile) {
+  camera.far = 300;  // smaller render distance on mobile
+} else {
+  camera.far = 1000; // default or higher render distance on desktop
+}
+camera.updateProjectionMatrix();
+
+
 // --------------------- Renderer ---------------------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
