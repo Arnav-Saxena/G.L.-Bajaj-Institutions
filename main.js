@@ -1268,6 +1268,28 @@ function animate() {
         // Store original camera position before any modifications
         const originalPosition = camera.position.clone();
 
+        // Update look damping for mobile touch controls
+        if (isMobileDevice || window.innerWidth <= 768) {
+            // Apply damped look velocity to camera rotation
+            cameraYaw -= lookVelocity.x;
+            cameraPitch -= lookVelocity.y;
+
+            // Clamp pitch to prevent over-rotation
+            cameraPitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraPitch));
+            
+            // Apply rotation to camera
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = cameraYaw;
+            camera.rotation.x = cameraPitch;
+
+            // Apply damping to look velocity
+            lookVelocity.multiplyScalar(lookDamping);
+            
+            // Stop very small velocities to prevent jitter
+            if (Math.abs(lookVelocity.x) < 0.001) lookVelocity.x = 0;
+            if (Math.abs(lookVelocity.y) < 0.001) lookVelocity.y = 0;
+        }
+
         // Update player OBB position
         updatePlayerOBB();
 
