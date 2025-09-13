@@ -957,7 +957,7 @@ function activateFPSControls() {
     camera.lookAt(0, 0, 0);
     camera.rotation.set(0, Math.PI / 2, 0);
     if (isMobileDevice) {
-        camera.far = 150;
+        camera.far = 550;
         camera.updateProjectionMatrix();
     }
 
