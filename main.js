@@ -774,6 +774,7 @@ function createFullscreenButton() {
         fullscreenButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
     });
 
+    
     // Fullscreen functionality
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
