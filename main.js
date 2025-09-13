@@ -553,7 +553,7 @@ function createMobileControls() {
     `;
     sprintButton.textContent = 'SPRINT';
 
-    
+
     controlsContainer.appendChild(joystickContainer);
     controlsContainer.appendChild(jumpButton);
     controlsContainer.appendChild(sprintButton);
@@ -794,7 +794,7 @@ function createFullscreenButton() {
         fullscreenButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
     });
 
-    
+
     // Fullscreen functionality
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
@@ -940,6 +940,8 @@ function activateOrbitControls() {
     fpsControls.enabled = false;
     orbitControls.enabled = true;
     activeControls = orbitControls;
+    camera.far = 550;
+    camera.updateProjectionMatrix();
     console.log('Orbit Controls Activated');
     if (document.getElementById("cameraView")) {
         document.getElementById("cameraView").value = "orbit";
@@ -953,7 +955,11 @@ function activateFPSControls() {
     camera.position.set(168, 2, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
-    camera.rotation.set(0, Math.PI/2, 0);
+    camera.rotation.set(0, Math.PI / 2, 0);
+    if (isMobileDevice) {
+        camera.far = 150;
+        camera.updateProjectionMatrix();
+    }
 
     // Initialize player OBB when switching to FPS
     if (!playerOBB) {
