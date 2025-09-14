@@ -6,6 +6,37 @@ import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockCont
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
 let jumpPressed = false;
+let yellowCuboids = [];
+// Create popup div dynamically and style it
+let areaPrompt = document.getElementById('areaPrompt');
+if (!areaPrompt) {
+    areaPrompt = document.createElement('div');
+    areaPrompt.id = 'areaPrompt';
+
+    Object.assign(areaPrompt.style, {
+        position: 'fixed',
+        bottom: '5vh',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(0, 0, 0, 0.6)',
+        color: 'white',
+        padding: '1vh 3vh',
+        borderRadius: '0.8vh',
+        fontFamily: "'Orbitron', monospace",
+        fontWeight: 'bold',
+        fontSize: '3vw',
+        zIndex: '10000',
+        display: 'none',
+        pointerEvents: 'none',
+        userSelect: 'none',
+        transition: 'opacity 0.5s ease',
+    });
+
+    areaPrompt.textContent = 'Academic Block - 2';
+
+    document.body.appendChild(areaPrompt);
+}
+
 
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     window.DEBUG_COLLIDERS = false;  // Disable debug meshes on mobile
@@ -976,6 +1007,85 @@ function activateOrbitControls() {
     }
 }
 
+
+function isInsideAreaXZ(position, cuboid) {
+    if (!cuboid) return false;
+    const box = new THREE.Box3().setFromObject(cuboid);
+    const px = position.x;
+    const pz = position.z;
+    const min = box.min;
+    const max = box.max;
+    return px >= min.x && px <= max.x && pz >= min.z && pz <= max.z;
+}
+let wasInsideArea = false;
+
+let currentAreaName = '';
+
+function updateAreaPrompt() {
+    if (yellowCuboids.length === 0) return;
+
+    const pos = camera.position;
+    let foundName = '';
+
+    for (const cuboid of yellowCuboids) {
+        if (
+            pos.x >= cuboid.min.x && pos.x <= cuboid.max.x &&
+            pos.z >= cuboid.min.z && pos.z <= cuboid.max.z
+        ) {
+            foundName = cuboid.name;
+            break;
+        }
+    }
+
+    if (foundName !== currentAreaName) {
+        currentAreaName = foundName;
+        if (foundName) {
+            areaPrompt.textContent = foundName;
+            areaPrompt.style.display = 'block';
+            requestAnimationFrame(() => {
+                areaPrompt.style.opacity = '1';
+            });
+        } else {
+            areaPrompt.style.opacity = '0';
+            setTimeout(() => {
+                areaPrompt.style.display = 'none';
+            }, 500); // Match this to your CSS transition duration
+        }
+    }
+
+}
+
+
+function createYellowCuboids() {
+    if (yellowCuboids.length > 0) return; // Prevent duplicates
+
+    const areas = [
+        { min: new THREE.Vector3(102, 0.8, 5.5), max: new THREE.Vector3(112, 1.3, 9), name: 'Academic Block - 2' },
+        { min: new THREE.Vector3(97.57, 0.8, -9.56), max: new THREE.Vector3(102.38, 1.3, -5.19), name: 'Academic Block - 1' },
+        { min: new THREE.Vector3(157.91, 0.8, -3.46), max: new THREE.Vector3(168.67, 1.3, 3.38), name: 'Welcome to G.L. Bajaj!' },
+        { min: new THREE.Vector3(35.84, 0.8, -30.36), max: new THREE.Vector3(39.26, 1.3, -28.75), name: 'Futsal Court' }
+        // Add more building areas here
+    ];
+
+    areas.forEach(area => {
+        const size = new THREE.Vector3().subVectors(area.max, area.min);
+        const center = new THREE.Vector3().addVectors(area.min, area.max).multiplyScalar(0.5);
+
+        const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+        const material = new THREE.MeshBasicMaterial({
+            color: 0xffcf4d,
+            transparent: true,
+            opacity: 0.2
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.copy(center);
+        scene.add(mesh);
+
+        yellowCuboids.push({ mesh, name: area.name, min: area.min, max: area.max });
+    });
+}
+
 function activateFPSControls() {
     orbitControls.enabled = false;
     fpsControls.enabled = true;
@@ -994,10 +1104,14 @@ function activateFPSControls() {
         initializePlayerOBB();
     }
 
+    // Create all yellow cuboids from array data
+    createYellowCuboids();
+
     if (document.getElementById("cameraView")) {
         document.getElementById("cameraView").value = "fps";
     }
 }
+
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyO') activateOrbitControls();
@@ -1190,11 +1304,11 @@ let cameraShake = {
     intensity: 0,
     frequency: 0,
     time: 0,
-    walkShakeIntensity: 0.04,
-    sprintShakeIntensity: 0.08,
+    walkShakeIntensity: 0.06,
+    sprintShakeIntensity: 0.1,
     walkShakeFrequency: 8,
     sprintShakeFrequency: 12,
-    landShakeIntensity: 0.07,
+    landShakeIntensity: 0.2,
     landShakeDuration: 0.4,
     currentLandShake: 0,
     landShakeDecay: 0,
@@ -1310,6 +1424,8 @@ function animate() {
     if (activeControls === fpsControls) {
         // Store original camera position before any modifications
         const originalPosition = camera.position.clone();
+
+        updateAreaPrompt();
 
         // Update player OBB position
         updatePlayerOBB();
