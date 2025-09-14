@@ -5,6 +5,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
+let jumpPressed = false;
+
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
     window.DEBUG_COLLIDERS = false;  // Disable debug meshes on mobile
     window.DEBUG_COLLISION_LOG = false; // Disable collision logs
@@ -479,7 +481,7 @@ function createMobileControls() {
     joystickContainer.style.cssText = `
         position: absolute;
         bottom: 36px;
-        left: 30px;
+        left: 40px;
         width: 120px;
         height: 120px;
         background: rgba(255, 255, 255, 0.2);
@@ -492,9 +494,9 @@ function createMobileControls() {
     const joystickKnob = document.createElement('div');
     joystickKnob.style.cssText = `
         position: absolute;
-        width: 50px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.8);
+        width: 55px;
+        height: 55px;
+        background: rgba(137, 137, 137, 0.8);
         border-radius: 50%;
         top: 50%;
         left: 50%;
@@ -561,7 +563,7 @@ function createMobileControls() {
 
     // Joystick Controls
     let joystickTouchId = null;
-    const maxJoystickDistance = 35;
+    const maxJoystickDistance = 60;
 
     function handleJoystickStart(e) {
         e.preventDefault();
@@ -663,8 +665,13 @@ function createMobileControls() {
         }, 100);
     }
 
-    jumpButton.addEventListener('touchstart', handleJump, { passive: false });
-    jumpButton.addEventListener('mousedown', handleJump);
+    jumpButton.addEventListener('touchstart', (e) => { e.preventDefault(); jumpPressed = true; });
+    jumpButton.addEventListener('touchend', (e) => { e.preventDefault(); jumpPressed = false; });
+    jumpButton.addEventListener('mousedown', (e) => { e.preventDefault(); jumpPressed = true; });
+    jumpButton.addEventListener('mouseup', (e) => { e.preventDefault(); jumpPressed = false; });
+
+    // jumpButton.addEventListener('touchstart', handleJump, { passive: false });
+    // jumpButton.addEventListener('mousedown', handleJump);
 
     // Sprint Button
     function handleSprintStart(e) {
@@ -681,10 +688,31 @@ function createMobileControls() {
         sprintButton.style.transform = 'scale(1)';
     }
 
-    sprintButton.addEventListener('touchstart', handleSprintStart, { passive: false });
-    sprintButton.addEventListener('touchend', handleSprintEnd, { passive: false });
-    sprintButton.addEventListener('mousedown', handleSprintStart);
-    sprintButton.addEventListener('mouseup', handleSprintEnd);
+    sprintButton.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        isRunning = !isRunning; // toggle
+        sprintButton.style.background = isRunning
+            ? 'rgba(255, 152, 0, 1)'
+            : 'rgba(255, 152, 0, 0.8)';
+        sprintButton.style.transform = isRunning
+            ? 'scale(0.95)'
+            : 'scale(1)';
+    }, { passive: false });
+
+    sprintButton.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        isRunning = !isRunning; // toggle
+        sprintButton.style.background = isRunning
+            ? 'rgba(255, 152, 0, 1)'
+            : 'rgba(255, 152, 0, 0.8)';
+        sprintButton.style.transform = isRunning
+            ? 'scale(0.95)'
+            : 'scale(1)';
+    });
+    // sprintButton.addEventListener('touchstart', handleSprintStart, { passive: false });
+    // sprintButton.addEventListener('touchend', handleSprintEnd, { passive: false });
+    // sprintButton.addEventListener('mousedown', handleSprintStart);
+    // sprintButton.addEventListener('mouseup', handleSprintEnd);
 
     // Touch look controls for camera (when in FPS mode)
     let touchLookActive = false;
@@ -692,7 +720,7 @@ function createMobileControls() {
 
     // Store pitch and yaw separately for proper FPS camera control
     let cameraPitch = 0;
-    let cameraYaw = 0;
+    let cameraYaw = Math.PI / 2;
 
     renderer.domElement.addEventListener('touchstart', (e) => {
         if (activeControls !== fpsControls) return;
@@ -1386,6 +1414,21 @@ function animate() {
     // CRITICAL: Remove shake offset after rendering so collision detection uses clean position
     if (activeControls === fpsControls && cameraShake.shakeOffset.lengthSq() > 0) {
         camera.position.sub(cameraShake.shakeOffset);
+    }
+
+    // Jump on hold logic
+    if (jumpPressed && canJump) {
+        const headCheck = checkVerticalCollisionOBB(
+            new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 1, camera.position.z),
+            'up'
+        );
+        if (!headCheck.collision) {
+            verticalVelocity = jumpStrength;
+            canJump = false;
+            if (isRunning) {
+                bunnyHopMultiplier = Math.min(bunnyHopMultiplier * 1.1, maxBunnyHop);
+            }
+        }
     }
 }
 
