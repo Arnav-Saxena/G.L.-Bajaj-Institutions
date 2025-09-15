@@ -1063,8 +1063,23 @@ function createYellowCuboids() {
     const areas = [
         { min: new THREE.Vector3(102, 0.4, 5.5), max: new THREE.Vector3(112, 0.8, 9), name: 'Academic Block - 2' },
         { min: new THREE.Vector3(97.57, 0.4, -9.56), max: new THREE.Vector3(102.38, 0.8, -5.19), name: 'Academic Block - 1' },
-        { min: new THREE.Vector3(157.91, 0.4, -3.46), max: new THREE.Vector3(168.67, 0.8, 3.38), name: 'Welcome to G.L. Bajaj!' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' }
+        { min: new THREE.Vector3(157.91, 0.4, -3.46), max: new THREE.Vector3(168.70, 0.8, 3.38), name: 'Welcome to G.L. Bajaj!' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(12.45, 0.4, -68.00), max: new THREE.Vector3(14.26, 0.8, -65.85), name: 'Basketball Court' },
+        { min: new THREE.Vector3(12.66, 0.4, -84.81), max: new THREE.Vector3(14.26, 0.8, -82.32), name: 'Badminton Court' },
+        { min: new THREE.Vector3(12.66, 0.4, -87.72), max: new THREE.Vector3(14.26, 0.8, -85.46), name: 'Volleyball Court' },
+        { min: new THREE.Vector3(130.66, 0.4, -54.35), max: new THREE.Vector3(138.23, 0.8, -49.51), name: 'Academic Block - 1' },
+
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+
         // Add more building areas here
     ];
 
@@ -1091,7 +1106,7 @@ function activateFPSControls() {
     orbitControls.enabled = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
-    camera.position.set(168, 2, 0);
+    camera.position.set(168.64, 1.85, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
     camera.rotation.set(0, Math.PI / 2, 0);
