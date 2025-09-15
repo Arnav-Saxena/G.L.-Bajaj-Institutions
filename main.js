@@ -994,7 +994,7 @@ document.addEventListener('click', () => {
 let activeControls = orbitControls;
 
 function activateOrbitControls() {
-    camera.position.set(300, 105, 100);
+    camera.position.set(300, 105, 0);
     fpsControls.unlock && fpsControls.unlock();
     fpsControls.enabled = false;
     orbitControls.enabled = true;
@@ -1060,10 +1060,10 @@ function createYellowCuboids() {
     if (yellowCuboids.length > 0) return; // Prevent duplicates
 
     const areas = [
-        { min: new THREE.Vector3(102, 0.8, 5.5), max: new THREE.Vector3(112, 1.3, 9), name: 'Academic Block - 2' },
-        { min: new THREE.Vector3(97.57, 0.8, -9.56), max: new THREE.Vector3(102.38, 1.3, -5.19), name: 'Academic Block - 1' },
-        { min: new THREE.Vector3(157.91, 0.8, -3.46), max: new THREE.Vector3(168.67, 1.3, 3.38), name: 'Welcome to G.L. Bajaj!' },
-        { min: new THREE.Vector3(35.84, 0.8, -30.36), max: new THREE.Vector3(39.26, 1.3, -28.75), name: 'Futsal Court' }
+        { min: new THREE.Vector3(102, 0.4, 5.5), max: new THREE.Vector3(112, 0.8, 9), name: 'Academic Block - 2' },
+        { min: new THREE.Vector3(97.57, 0.4, -9.56), max: new THREE.Vector3(102.38, 0.8, -5.19), name: 'Academic Block - 1' },
+        { min: new THREE.Vector3(157.91, 0.4, -3.46), max: new THREE.Vector3(168.67, 0.8, 3.38), name: 'Welcome to G.L. Bajaj!' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' }
         // Add more building areas here
     ];
 
@@ -1073,7 +1073,7 @@ function createYellowCuboids() {
 
         const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);
         const material = new THREE.MeshBasicMaterial({
-            color: 0xffcf4d,
+            color: 0xff0000,
             transparent: true,
             opacity: 0.2
         });
