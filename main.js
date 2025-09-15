@@ -216,9 +216,10 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 550);
-camera.position.set(300, 105, 100);
+camera.position.set(250, 65, 100);
 camera.lookAt(0, 0, 0);
 camera.zoom = 1;
+
 
 
 camera.updateProjectionMatrix();
