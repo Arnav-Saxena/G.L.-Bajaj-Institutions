@@ -1060,6 +1060,8 @@ function updateAreaPrompt() {
 function createYellowCuboids() {
     if (yellowCuboids.length > 0) return; // Prevent duplicates
 
+
+
     const areas = [
         { min: new THREE.Vector3(102, 0.4, 5.5), max: new THREE.Vector3(112, 0.8, 9), name: 'Academic Block - 2' },
         { min: new THREE.Vector3(97.57, 0.4, -9.56), max: new THREE.Vector3(102.38, 0.8, -5.19), name: 'Academic Block - 1' },
@@ -1091,17 +1093,7 @@ function createYellowCuboids() {
         { min: new THREE.Vector3(63.31, 0.4, 22.59), max: new THREE.Vector3(66.29, 0.8, 28.00), name: 'Main Ground' },
         { min: new THREE.Vector3(-167.89, 0.4, 18.19), max: new THREE.Vector3(-154.83, 0.8, 28.52), name: 'Girls Hostel Gate' },
         { min: new THREE.Vector3(-29.20, 0.4, 25.61), max: new THREE.Vector3(-22.52, 0.8, 34.33), name: 'Girls Hostel Gate' },
-        
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(-30.38, 0.4, -8.00), max: new THREE.Vector3(-25.14, 0.8, -0.34), name: 'Girls Hostel' },
 
         // Add more building areas here
     ];
@@ -1114,7 +1106,7 @@ function createYellowCuboids() {
         const material = new THREE.MeshBasicMaterial({
             color: 0xff0000,
             transparent: true,
-            opacity: 0.2
+            opacity: 0.15
         });
 
         const mesh = new THREE.Mesh(geometry, material);
