@@ -499,92 +499,92 @@ function createMobileControls() {
 
     const controlsContainer = document.createElement('div');
     controlsContainer.style.cssText = `
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 200px;
-        pointer-events: none;
-        z-index: 1000;
-    `;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            pointer-events: none;
+            z-index: 1000;
+        `;
 
     // Joystick
     const joystickContainer = document.createElement('div');
     joystickContainer.style.cssText = `
-        position: absolute;
-        bottom: 36px;
-        left: 40px;
-        width: 120px;
-        height: 120px;
-        background: rgba(255, 255, 255, 0.2);
-        border: 3px solid rgba(255, 255, 255, 0.4);
-        border-radius: 50%;
-        pointer-events: auto;
-        touch-action: none;
-    `;
+            position: absolute;
+            bottom: 36px;
+            left: 40px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            pointer-events: auto;
+            touch-action: none;
+        `;
 
     const joystickKnob = document.createElement('div');
     joystickKnob.style.cssText = `
-        position: absolute;
-        width: 55px;
-        height: 55px;
-        background: rgba(137, 137, 137, 0.8);
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        transition: all 0.1s ease;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    `;
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            background: rgba(137, 137, 137, 0.8);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        `;
 
     joystickContainer.appendChild(joystickKnob);
 
     // Jump Button
     const jumpButton = document.createElement('div');
     jumpButton.style.cssText = `
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        background: rgba(76, 175, 80, 0.8);
-        border: 3px solid rgba(76, 175, 80, 1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 14px;
-        pointer-events: auto;
-        touch-action: none;
-        user-select: none;
-        font-family: 'Inter', sans-serif;
-    `;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(76, 175, 80, 0.8);
+            border: 3px solid rgba(76, 175, 80, 1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+            font-family: 'Inter', sans-serif;
+        `;
     jumpButton.textContent = 'JUMP';
 
     // Sprint Button
     const sprintButton = document.createElement('div');
     sprintButton.style.cssText = `
-        position: absolute;
-        bottom: 20px;
-        right: 100px;
-        width: 60px;
-        height: 60px;
-        background: rgba(255, 152, 0, 0.8);
-        border: 3px solid rgba(255, 152, 0, 1);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 14px;
-        pointer-events: auto;
-        touch-action: none;
-        user-select: none;
-        font-family: 'Inter', sans-serif;
-    `;
+            position: absolute;
+            bottom: 20px;
+            right: 100px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 152, 0, 0.8);
+            border: 3px solid rgba(255, 152, 0, 1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+            font-family: 'Inter', sans-serif;
+        `;
     sprintButton.textContent = 'SPRINT';
 
 
@@ -817,28 +817,28 @@ createMobileControls();
 function createFullscreenButton() {
     const fullscreenButton = document.createElement('div');
     fullscreenButton.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 120px;
-        height: 35px;
-        background: rgba(33, 150, 243, 0.9);
-        border: 2px solid rgba(33, 150, 243, 1);
-        border-radius: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 15px;
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        cursor: pointer;
-        user-select: none;
-        z-index: 2000;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    `;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: rgba(33, 150, 243, 0.9);
+            border: 2px solid rgba(33, 150, 243, 1);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            cursor: pointer;
+            user-select: none;
+            z-index: 2000;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        `;
     fullscreenButton.textContent = 'FULLSCREEN';
 
     // Hover effects
@@ -1076,15 +1076,15 @@ function createYellowCuboids() {
         { min: new THREE.Vector3(70.72, 0.4, -112.20), max: new THREE.Vector3(76.11, 0.8, -107.28), name: 'Day-Scholar Mess' },
         { min: new THREE.Vector3(37.38, 0.4, -3.59), max: new THREE.Vector3(43.34, 0.8, 0.83), name: 'Main Ground' },
         { min: new THREE.Vector3(66.93, 0.4, 16.53), max: new THREE.Vector3(69.02, 0.8, 26.09), name: 'Library' },
+        { min: new THREE.Vector3(75.24, 0.4, 38.96), max: new THREE.Vector3(78.85, 0.8, 42.65), name: 'MBA Canteen' },
+        { min: new THREE.Vector3(107.67, 0.4, -6.22), max: new THREE.Vector3(109.35, 0.8, -4.06), name: 'Fee Counter' },
+        { min: new THREE.Vector3(57.81, 0.4, -118.35), max: new THREE.Vector3(64.47, 0.8, -111.12), name: 'Gate No. - 2' },
+        { min: new THREE.Vector3(8.38, 0.4, 51.53), max: new THREE.Vector3(12.02, 0.8, 58.02), name: 'Main Ground' },
+        { min: new THREE.Vector3(96.45, 0.4, -97.79), max: new THREE.Vector3(103.50, 0.8, -94.27), name: 'Academic Block - 1' },
+        { min: new THREE.Vector3(65.68, 0.4, -54.77), max: new THREE.Vector3(68.19, 0.8, -49.24), name: 'Academic Block - 1' },
+        { min: new THREE.Vector3(57.22, 0.4, -48.71), max: new THREE.Vector3(60.71, 0.8, -45.66), name: 'Boys Hostel - 1' },
+        { min: new THREE.Vector3(41.45, 0.4, 85.92), max: new THREE.Vector3(45.60, 0.8, 87.71), name: 'Boys Hostel - 2' },
 
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
-        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
         { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
         { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
         { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
