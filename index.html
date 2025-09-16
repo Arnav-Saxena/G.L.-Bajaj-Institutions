@@ -508,7 +508,7 @@
             justify-content: center;
             align-items: center;
             z-index: 10000;
-            animation: fadeIn 0.3s ease-out;
+            animation: fadeIn 0.5s ease-out;
         }
 
         #initialControlsPopup.show {
@@ -525,7 +525,7 @@
             color: white;
             font-family: 'Inter', sans-serif;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            animation: slideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes fadeIn {
@@ -705,6 +705,29 @@
                 min-width: 40px;
             }
         }
+
+        .top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#hamburgerIcon {
+    width: 25px;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin-right: 8px;
+}
+
+#hamburgerIcon div {
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+}
+
     </style>
 </head>
 
@@ -876,7 +899,18 @@
 
     <!-- Main Content -->
     <div id="mainContent" style="opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in;">
-        <h1 class="top-left">G.L. Bajaj Institutions</h1>
+<h1 class="top-left">
+    <a href="dashboard.html" aria-label="Go to Dashboard"
+        style="display:flex; align-items:center; color: white; text-decoration:none;">
+        <div id="hamburgerIcon" aria-hidden="true">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+        G.L. Bajaj Institutions
+    </a>
+</h1>
+
 
         <!-- Controls Menu Button (Desktop Only) -->
         <button id="controlsMenuBtn">Controls</button>
@@ -1066,7 +1100,7 @@
                             // Show initial controls popup after loading is complete
                             setTimeout(() => {
                                 showInitialPopup();
-                            }, 1);
+                            }, 500);
                         }, 800);
                     }, 500);
                 }

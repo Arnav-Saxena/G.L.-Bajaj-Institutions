@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GL Bajaj Project Details</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f3460;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 35%, #16213e 70%, #0f3460 100%);
+        }
+
+        h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #64b5f6, #42a5f5, #2196f3, #1976d2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 30px 0;
+            text-align: center;
+            user-select: none;
+            letter-spacing: 1.5px;
+        }
+
+        .repo-button {
+            background: linear-gradient(135deg, #2196f3, #42a5f5);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.5);
+            transition: background 0.3s ease;
+            max-width: 300px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .exit-button {
+    background: linear-gradient(135deg, #2196f3, #42a5f5);
+    border: none;
+    color: white;
+    padding: 12px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.5);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+    max-width: 300px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+    align-self: flex-start; /* Aligns the button to the left */
+}
+
+.exit-button:hover {
+    background: linear-gradient(135deg, #1976d2, #2196f3);
+    box-shadow: 0 6px 14px rgba(33, 150, 243, 0.8);
+}
+
+        .repo-button:hover {
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+            box-shadow: 0 6px 14px rgba(33, 150, 243, 0.8);
+        }
+
+        .pioneers {
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            user-select: none;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .pioneer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .pioneer img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 18px;
+            border: 3px solid #2196f3;
+            user-select: none;
+        }
+
+        .pioneer-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+            color: #90caf9;
+            text-align: center;
+        }
+
+        .role {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #64b5f6;
+            margin-bottom: 15px;
+            position: relative;
+            padding-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .role::after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #64b5f6, #2196f3);
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        /* Skills without blue background, just light gray text */
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .skill {
+            color: #b0bec5;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            user-select: text;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .buttons a {
+            background: rgba(33, 150, 243, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(33, 150, 243, 0.5);
+            user-select: none;
+            transition: background 0.3s ease;
+            flex: 1;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 100px;
+        }
+
+        .buttons a:hover {
+            background: rgba(33, 150, 243, 1);
+            box-shadow: 0 6px 18px rgba(33, 150, 243, 0.9);
+        }
+
+        .features {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 30px 40px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #cfd8dc;
+            user-select: none;
+            overflow-wrap: break-word;
+        }
+
+        .features h2 {
+            color: #64b5f6;
+            font-family: 'Orbitron', monospace;
+            margin-bottom: 20px;
+            user-select: text;
+            text-align: center;
+        }
+
+        ul {
+            padding-left: 1.2rem;
+        }
+
+        ul li {
+            margin-bottom: 12px;
+            word-wrap: break-word;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 860px) {
+            .pioneers {
+                gap: 40px;
+                padding: 0 10px;
+            }
+
+            .pioneer {
+                max-width: 100%;
+                width: 280px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+                margin-bottom: 20px;
+            }
+
+            .repo-button {
+                max-width: 100%;
+                padding: 10px 16px;
+                font-size: 0.95rem;
+                margin-bottom: 28px;
+            }
+
+            .features {
+                padding: 20px;
+                font-size: 1rem;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+                max-width: 100%;
+                overflow-wrap: anywhere;
+            }
+
+            ul {
+                padding-left: 1rem;
+            }
+
+            ul li {
+                font-size: 0.95rem;
+            }
+
+            .buttons {
+                gap: 12px;
+            }
+
+            .buttons a {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+                min-width: 80px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .buttons a {
+                font-size: 0.85rem;
+                padding: 6px 10px;
+                min-width: 70px;
+            }
+
+            .pioneers {
+                gap: 24px;
+                padding: 0 6px;
+            }
+
+            .pioneer {
+                width: 100%;
+                padding: 18px 20px;
+                box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+            }
+
+            .pioneer-name {
+                font-size: 1.3rem;
+            }
+
+            .role {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="exit-button" onclick="location.href='index.html'" title="Exit to Home Page">Exit</button>
+
+    <h1>G.L. Bajaj Institutions</h1>
+
+    <a href="https://github.com/Rudranshbhardwaj2401/G.L.-Bajaj-Institutions" target="_blank" class="repo-button" rel="noopener noreferrer"
+        title="View Project on GitHub">View Project on GitHub</a>
+
+    <section class="pioneers" aria-label="Project pioneers and contributors">
+        <div class="pioneer">
+            <img src="./public/Rudransh Pic.jpg" alt="Photo of Rudransh Bhardwaj" />
+            <div class="pioneer-name">Rudransh Bhardwaj</div>
+            <div class="role">Project Pioneer</div>
+            <div class="skills" aria-label="Skills and technologies used by Rudransh Bhardwaj">
+                <div class="skill">Blender</div>
+                <div class="skill">Three.js</div>
+                <div class="skill">HTML</div>
+                <div class="skill">CSS</div>
+                <div class="skill">JavaScript</div>
+            </div>
+            <div class="buttons">
+                <a href="https://www.linkedin.com/in/notifyrudr" target="_blank" rel="noopener noreferrer"
+                    title="LinkedIn Profile of Rudransh Bhardwaj">LinkedIn</a>
+                <a href="https://github.com/Rudranshbhardwaj2401" target="_blank" rel="noopener noreferrer"
+                    title="GitHub Profile of Rudransh Bhardwaj">GitHub</a>
+            </div>
+        </div>
+
+        <div class="pioneer">
+            <img src="./public/Arnav Pic.jpg" alt="Photo of Arnav Saxena" />
+            <div class="pioneer-name">Arnav Saxena</div>
+            <div class="role">Sub Pioneer</div>
+            <div class="skills" aria-label="Skills and technologies used by Arnav Saxena">
+                                <div class="skill">Three.js</div>
+                <div class="skill">HTML</div>
+                <div class="skill">CSS</div>
+                <div class="skill">JavaScript</div>
+            </div>
+            <div class="buttons">
+                <a href="https://www.linkedin.com/in/arnav-saxena-061003319/" target="_blank" rel="noopener noreferrer"
+                    title="LinkedIn Profile of Arnav Saxena">LinkedIn</a>
+                <a href="https://github.com/Arnav-Saxena" target="_blank" rel="noopener noreferrer"
+                    title="GitHub Profile of Arnav Saxena">GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" aria-label="Project features and highlights">
+        <h2>Project Features</h2>
+        <ul>
+            <li>First ever interactive 3D model of G.L. Bajaj Institutions</li>
+            <li>Free to roam - Open World exploration allowing full campus navigation</li>
+            <li>Multiple camera modes: Orbit View and FPS (First Person Shooter) View</li>
+            <li>Interactive location highlights providing instant info on campus spots</li>
+            <li>Detailed area insights – view information about each building or zone by exploring highlighted parts
+            </li>
+            <li>Developed using Blender and Three.js for advanced 3D and web integration</li>
+            <li>Also Highly optimized for mobile devices ensuring smooth performance</li>
+            <li>Unified control panel and overview for quick access to all campus features</li>
+        </ul>
+    </section>
+</body>
+
+</html>
