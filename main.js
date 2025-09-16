@@ -1089,7 +1089,13 @@ function createYellowCuboids() {
         { min: new THREE.Vector3(-23.51, 0.4, 113.91), max: new THREE.Vector3(-17.21, 0.8, 123.18), name: 'Gate No. - 3' },
         { min: new THREE.Vector3(-26.29, 0.4, 58.42), max: new THREE.Vector3(-20.45, 0.8, 62.54), name: 'BCA/MCA Building' },
         { min: new THREE.Vector3(63.31, 0.4, 22.59), max: new THREE.Vector3(66.29, 0.8, 28.00), name: 'Main Ground' },
-
+        { min: new THREE.Vector3(-167.89, 0.4, 18.19), max: new THREE.Vector3(-154.83, 0.8, 28.52), name: 'Girls Hostel Gate' },
+        { min: new THREE.Vector3(-29.20, 0.4, 25.61), max: new THREE.Vector3(-22.52, 0.8, 34.33), name: 'Girls Hostel Gate' },
+        
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
+        { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
         { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
         { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
         { min: new THREE.Vector3(35.84, 0.4, -30.36), max: new THREE.Vector3(39.26, 0.8, -28.75), name: 'Futsal Court' },
