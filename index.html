@@ -684,19 +684,34 @@
         }
 
         #hamburgerIcon {
-            width: 25px;
-            height: 20px;
+            width: 40px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            margin-right: 8px;
+            background: rgba(33, 150, 243, 0.8);
+            border: 2px solid rgba(33, 150, 243, 1);
+            border-radius: 10px;
+            padding: 5px;
+            box-sizing: border-box;
+            transition: background 0.3s ease, transform 0.3s ease;
         }
 
         #hamburgerIcon div {
             height: 3px;
+            width: 25px;
             background: white;
             border-radius: 2px;
+            margin-bottom: 5px;
+        }
+
+        #hamburgerIcon div:last-child {
+            margin-bottom: 0;
+        }
+
+        #hamburgerIcon:hover {
+            background: rgba(33, 150, 243, 1);
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -877,8 +892,8 @@
                     <div></div>
                     <div></div>
                 </div>
-                G.L. Bajaj Institutions
             </a>
+            G.L. Bajaj Institutions
         </h1>
 
 
