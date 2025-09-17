@@ -843,13 +843,12 @@ function createFullscreenButton() {
 
     // Hover effects
     fullscreenButton.addEventListener('mouseenter', () => {
-        fullscreenButton.style.background = 'rgba(33, 150, 243, 1)';
+
         fullscreenButton.style.transform = 'translateX(-50%) scale(1.05)';
         fullscreenButton.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.3)';
     });
 
     fullscreenButton.addEventListener('mouseleave', () => {
-        fullscreenButton.style.background = 'rgba(33, 150, 243, 0.9)';
         fullscreenButton.style.transform = 'translateX(-50%) scale(1)';
         fullscreenButton.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
     });
