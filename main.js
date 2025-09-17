@@ -860,7 +860,7 @@ function createFullscreenButton() {
         if (!document.fullscreenElement) {
             // Enter fullscreen
             document.documentElement.requestFullscreen().then(() => {
-                fullscreenButton.textContent = 'EXIT FULLSCREEN';
+                fullscreenButton.textContent = 'EXIT';
                 fullscreenButton.style.background = 'rgba(255, 152, 0, 0.9)';
                 fullscreenButton.style.borderColor = 'rgba(255, 152, 0, 1)';
                 fullscreenButton.style.width = '150px';
@@ -882,17 +882,20 @@ function createFullscreenButton() {
         }
     }
 
-    // Click and touch events
-    fullscreenButton.addEventListener('click', toggleFullscreen);
-    fullscreenButton.addEventListener('touchstart', (e) => {
+    // Use touchend event for mobile to better capture tap completion and prevent 300ms delay
+    fullscreenButton.addEventListener('touchend', (e) => {
         e.preventDefault();
         toggleFullscreen();
     }, { passive: false });
 
+    // Keep click event for desktop fallback
+    fullscreenButton.addEventListener('click', toggleFullscreen);
+
+
     // Listen for fullscreen changes (when user presses ESC or F11)
     document.addEventListener('fullscreenchange', () => {
         if (document.fullscreenElement) {
-            fullscreenButton.textContent = 'EXIT FULLSCREEN';
+            fullscreenButton.textContent = 'EXIT';
             fullscreenButton.style.background = 'rgba(255, 152, 0, 0.9)';
             fullscreenButton.style.borderColor = 'rgba(255, 152, 0, 1)';
             fullscreenButton.style.width = '150px';
