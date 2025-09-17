@@ -898,7 +898,7 @@ function createFullscreenButton() {
             fullscreenButton.textContent = 'EXIT';
             fullscreenButton.style.background = 'rgba(255, 152, 0, 0.9)';
             fullscreenButton.style.borderColor = 'rgba(255, 152, 0, 1)';
-            fullscreenButton.style.width = '150px';
+            fullscreenButton.style.width = '120px';
         } else {
             fullscreenButton.textContent = 'FULLSCREEN';
             fullscreenButton.style.background = 'rgba(33, 150, 243, 0.9)';
