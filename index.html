@@ -354,11 +354,11 @@
             pointer-events: none;
         }
 
-        .loading-content {
-            text-align: center;
-            max-width: 600px;
-            padding: 0 20px;
-        }
+.loading-content {
+    text-align: center;
+    max-width: 600px;
+    transform: translateY(-5%); /* Shifts the element up by 20% of its own height */
+}
 
         .main-title {
             font-family: 'Orbitron', monospace;
@@ -387,20 +387,20 @@
             font-size: 1.1rem;
             color: #b0bec5;
             font-weight: 300;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
             opacity: 0.9;
         }
 
         .status-container {
             height: 40px;
-            margin-bottom: 40px;
+            margin-bottom: 0px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .status-text {
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             font-weight: 500;
             color: #e3f2fd;
         }
@@ -412,7 +412,7 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
-            margin: 30px 0;
+            margin: 0px 0;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -449,7 +449,7 @@
         }
 
         .progress-text {
-            font-size: 1rem;
+            font-size: 0.8rem;
             color: #90caf9;
             font-weight: 500;
             margin-top: 15px;
@@ -459,7 +459,7 @@
         .footer-text {
             position: absolute;
             bottom: 30px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #90a4ae;
             font-weight: 500;
             letter-spacing: 0.5px;
@@ -640,6 +640,23 @@
             background: rgba(100, 181, 246, 0.3);
             color: white;
         }
+.bajajlogo{
+height:100px;
+margin-bottom: 10px;
+}
+.ourpics {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* space between images */
+  margin-bottom: 15px;
+}
+
+.ourpics img {
+  height: 45px;
+  border-radius: 50%;
+}
+
 
         /* Mobile adjustments for popup */
         @media (max-width: 768px) {
@@ -738,6 +755,7 @@
     <!-- Loading Screen -->
     <div id="loadingScreen">
         <div class="loading-content">
+            <img src="/Logo.png" class="bajajlogo">
             <div class="main-title">G.L. BAJAJ</div>
             <div class="subtitle">INSTITUTIONS</div>
 
@@ -755,6 +773,10 @@
         </div>
 
         <div class="footer-text">
+            <div class="ourpics">
+                <img src="/Rudransh Pic.jpg">
+                <img src="/Arnav Pic.jpg">
+            </div>
             Crafted by Rudransh and Arnav
         </div>
     </div>
