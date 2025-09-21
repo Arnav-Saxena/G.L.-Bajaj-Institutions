@@ -354,11 +354,12 @@
             pointer-events: none;
         }
 
-.loading-content {
-    text-align: center;
-    max-width: 600px;
-    transform: translateY(-5%); /* Shifts the element up by 20% of its own height */
-}
+        .loading-content {
+            text-align: center;
+            max-width: 600px;
+            transform: translateY(-5%);
+            /* Shifts the element up by 20% of its own height */
+        }
 
         .main-title {
             font-family: 'Orbitron', monospace;
@@ -640,44 +641,91 @@
             background: rgba(100, 181, 246, 0.3);
             color: white;
         }
-.bajajlogo{
-height:100px;
-margin-bottom: 10px;
-}
-.ourpics {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px; /* space between images */
-  margin-bottom: 15px;
-}
 
-.ourpics img {
-  height: 45px;
-  border-radius: 50%;
-}
+        .bajajlogo {
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .ourpics {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            /* space between images */
+            margin-bottom: 15px;
+        }
+
+        .ourpics img {
+            height: 45px;
+            border-radius: 50%;
+        }
 
 
         /* Mobile adjustments for popup */
         @media (max-width: 768px) {
             .main-title {
-                font-size: 2.2rem;
+                top: 10px;
+                font-size: 1rem;
+            }
+
+            .subtitle {
+                font-size: 0.5rem;
+                margin-bottom: 0px;
+            }
+
+            .loading-content {
+                text-align: center;
+                max-width: 600px;
+                transform: translateY(-5%);
+                /* Shifts the element up by 20% of its own height */
+            }
+
+            .bajajlogo {
+                height: 40px;
+                margin: 10px;
+            }
+
+            .status-container {
+                margin-top: 15px;
+                            height: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .status-text {
-                font-size: 1rem;
+                font-size: 0.4rem;
+                font-weight: 500;
+                color: #e3f2fd;
             }
 
             .loading-bar-container {
                 max-width: 300px;
+                height: 2px;
+            }
+
+            .progress-text {
+                font-size: 0.3rem;
+                color: #90caf9;
+                font-weight: 500;
+                margin-top: 5px;
+                font-family: 'Orbitron', monospace;
             }
 
             .footer-text {
-                font-size: 0.7rem;
+                font-size: 0.4rem;
+                            bottom: 5px;
             }
-
+        .ourpics {
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+                .ourpics img {
+            height: 25px;
+        }
             .initial-controls-content {
-                padding: 20px;
+                padding: 15px;
                 max-width: 350px;
             }
 
