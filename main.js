@@ -4,7 +4,22 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+// Add these variables near the top of main.js
+let isTweeningCamera = false;
+const tweenTarget = {
+    position: new THREE.Vector3(),
+    lookAt: new THREE.Vector3()
+};
+const TWEEN_SPEED = 0.05; // Controls the speed of the camera transition
 
+// Define your 5 camera views here
+const predefinedViews = [
+    { position: new THREE.Vector3(200, 80, 50), lookAt: new THREE.Vector3(50, 0, 0), name: 'Main Entrance' },
+    { position: new THREE.Vector3(50, 20, -50), lookAt: new THREE.Vector3(80, 5, -20), name: 'Acad. Block 1' },
+    { position: new THREE.Vector3(40, 15, 40), lookAt: new THREE.Vector3(0, 0, 0), name: 'Main Ground' },
+    { position: new THREE.Vector3(20, 10, -80), lookAt: new THREE.Vector3(20, 5, -60), name: 'Sports Courts' },
+    { position: new THREE.Vector3(-20, 30, 80), lookAt: new THREE.Vector3(20, 5, 60), name: 'Hostel Area' }
+];
 let jumpPressed = false;
 let yellowCuboids = [];
 // Create popup div dynamically and style it
@@ -204,7 +219,70 @@ const loadingManager = new THREE.LoadingManager(() => {
         window.onAssetsLoaded();
     }
 });
+// Add this new block of code to main.js
 
+// Helper function to handle the smooth camera movement
+// In main.js, REPLACE your old tweenCameraToView function with this:
+function tweenCameraToView(viewIndex) {
+    if (viewIndex < 0 || viewIndex >= predefinedViews.length) return;
+
+    const view = predefinedViews[viewIndex];
+    tweenTarget.position.copy(view.position);
+    tweenTarget.lookAt.copy(view.lookAt);
+    isTweeningCamera = true;
+
+    // Update the active button style and name display
+    const viewButtons = document.querySelectorAll('.view-btn');
+    viewButtons.forEach((btn, index) => {
+        const nameSpan = btn.querySelector('.view-name');
+        if (index === viewIndex) {
+            btn.classList.add('active');
+            nameSpan.textContent = view.name; // Set the name
+        } else {
+            btn.classList.remove('active');
+            nameSpan.textContent = ''; // Clear the name
+        }
+    });
+}
+
+// Main function to activate the "Views" mode
+function activateViewsMode() {
+    document.getElementById('viewsContainer')?.classList.add('show');
+    document.getElementById('desktopCameraModeButton')?.classList.add('disabled');
+    document.getElementById('viewsModeButton')?.classList.remove('disabled');
+
+    // ... (rest of your original activateViewsMode code is fine) ...
+    fpsControls.unlock && fpsControls.unlock();
+    fpsControls.enabled = false;
+    orbitControls.enabled = true;
+    activeControls = orbitControls;
+    orbitControls.enablePan = false;
+    orbitControls.enableZoom = false;
+    orbitControls.autoRotate = false;
+    orbitControls.minPolarAngle = 0;
+    orbitControls.maxPolarAngle = Math.PI;
+    console.log('Views Mode Activated');
+    tweenCameraToView(0); // Move to the first view by default
+}
+
+// Make the function globally available for the button in index.html
+// Add these lines at the end of your main.js file
+// or after the function definitions.
+
+window.activateOrbitControls = activateOrbitControls;
+window.activateFPSControls = activateFPSControls;
+window.activateViewsMode = activateViewsMode;
+
+// Add event listeners for the view buttons once the document is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const viewButtons = document.querySelectorAll('.view-btn');
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const viewIndex = parseInt(btn.dataset.view, 10);
+            tweenCameraToView(viewIndex);
+        });
+    });
+});
 loadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
     console.log(`Loading: ${itemsLoaded}/${itemsTotal} - ${url}`);
 };
@@ -996,19 +1074,32 @@ document.addEventListener('click', () => {
 // --------------------- Camera Mode Switching ---------------------
 let activeControls = orbitControls;
 
+// In main.js, replace the old function with this
 function activateOrbitControls() {
+    document.getElementById('viewsContainer')?.classList.remove('show');
+    document.getElementById('desktopCameraModeButton')?.classList.remove('disabled');
+    // This line correctly fades the "Views" button
+    document.getElementById('viewsModeButton')?.classList.add('disabled');
+
+    isTweeningCamera = false;
+    // ... (rest of the function is the same)
     camera.position.set(280, 60, 100);
     fpsControls.unlock && fpsControls.unlock();
     fpsControls.enabled = false;
     orbitControls.enabled = true;
     activeControls = orbitControls;
-    camera.far = 550;
+    orbitControls.enablePan = true;
+    orbitControls.enableZoom = true;
+    orbitControls.autoRotate = true;
+    orbitControls.target.set(0, -20, 0);
+    orbitControls.update();
+    const currentPolar = orbitControls.getPolarAngle();
+    orbitControls.minPolarAngle = currentPolar;
+    orbitControls.maxPolarAngle = currentPolar;
     camera.updateProjectionMatrix();
     console.log('Orbit Controls Activated');
-    if (document.getElementById("cameraView")) {
-        document.getElementById("cameraView").value = "orbit";
-    }
 }
+
 
 
 function isInsideAreaXZ(position, cuboid) {
@@ -1119,32 +1210,28 @@ function createYellowCuboids() {
     });
 }
 
+// In main.js, replace the old function with this
 function activateFPSControls() {
+    document.getElementById('viewsContainer')?.classList.remove('show');
+    document.getElementById('desktopCameraModeButton')?.classList.remove('disabled');
+    // This line correctly fades the "Views" button
+    document.getElementById('viewsModeButton')?.classList.add('disabled');
+
+    isTweeningCamera = false;
+    // ... (rest of the function is the same)
     orbitControls.enabled = false;
+    orbitControls.autoRotate = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
     camera.position.set(172.0, 1.85, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
     camera.rotation.set(0, Math.PI / 2, 0);
-    if (isMobileDevice) {
-        camera.far = 550;
-        camera.updateProjectionMatrix();
-    }
-
-    // Initialize player OBB when switching to FPS
     if (!playerOBB) {
         initializePlayerOBB();
     }
-
-    // Create all yellow cuboids from array data
     createYellowCuboids();
-
-    if (document.getElementById("cameraView")) {
-        document.getElementById("cameraView").value = "fps";
-    }
 }
-
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyO') activateOrbitControls();
@@ -1451,9 +1538,22 @@ function checkLandingShake() {
 const clock = new THREE.Clock();
 
 function animate() {
+
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
+    if (isTweeningCamera) {
+        // Smoothly interpolate position and target
+        camera.position.lerp(tweenTarget.position, TWEEN_SPEED);
+        orbitControls.target.lerp(tweenTarget.lookAt, TWEEN_SPEED);
 
+        // Check if the tween is close enough to finish
+        if (camera.position.distanceTo(tweenTarget.position) < 0.1) {
+            isTweeningCamera = false;
+            // Snap to the final position to ensure accuracy
+            camera.position.copy(tweenTarget.position);
+            orbitControls.target.copy(tweenTarget.lookAt);
+        }
+    }
     if (activeControls === fpsControls) {
         // Store original camera position before any modifications
         const originalPosition = camera.position.clone();
