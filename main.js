@@ -216,7 +216,7 @@ loadingManager.onError = function (url) {
 // --------------------- Scene & Camera ---------------------
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 550);
-camera.position.set(250, 65, 100);
+camera.position.set(280, 60, 100);
 camera.lookAt(0, 0, 0);
 camera.zoom = 1;
 
@@ -245,7 +245,7 @@ document.body.appendChild(renderer.domElement);
 // --------------------- Controls ---------------------
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
-orbitControls.target.set(0, 0, 0);
+orbitControls.target.set(0, -20, 0);
 orbitControls.dampingFactor = 0.05;
 orbitControls.update();
 const currentPolar = orbitControls.getPolarAngle(); // phi - vertical angle
@@ -997,7 +997,7 @@ document.addEventListener('click', () => {
 let activeControls = orbitControls;
 
 function activateOrbitControls() {
-    camera.position.set(300, 105, 0);
+    camera.position.set(280, 60, 100);
     fpsControls.unlock && fpsControls.unlock();
     fpsControls.enabled = false;
     orbitControls.enabled = true;
@@ -1123,7 +1123,7 @@ function activateFPSControls() {
     orbitControls.enabled = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
-    camera.position.set(168.64, 1.85, 0);
+    camera.position.set(172.0, 1.85, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
     camera.rotation.set(0, Math.PI / 2, 0);
