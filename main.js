@@ -14,7 +14,10 @@ const TWEEN_SPEED = 0.05; // Controls the speed of the camera transition
 
 // Define your 5 camera views here
 const predefinedViews = [
-    { position: new THREE.Vector3(200, 80, 50), lookAt: new THREE.Vector3(50, 0, 0), name: 'Main Entrance' },
+    {
+        position: new THREE.Vector3(114.54, 45, -5
+        ), lookAt: new THREE.Vector3(114.54, 45,40), name: 'Main Entrance'
+    },
     { position: new THREE.Vector3(50, 20, -50), lookAt: new THREE.Vector3(80, 5, -20), name: 'Acad. Block 1' },
     { position: new THREE.Vector3(40, 15, 40), lookAt: new THREE.Vector3(0, 0, 0), name: 'Main Ground' },
     { position: new THREE.Vector3(20, 10, -80), lookAt: new THREE.Vector3(20, 5, -60), name: 'Sports Courts' },
@@ -1599,7 +1602,7 @@ function animate() {
     const delta = clock.getDelta();
     TWEEN.update();
     // --- REPLACE THE OLD isTweeningCamera BLOCK WITH THIS ---
-    
+
     if (activeControls === fpsControls) {
         // ... (rest of your animate function for FPS mode is fine)
         const originalPosition = camera.position.clone();
