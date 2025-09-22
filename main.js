@@ -223,44 +223,99 @@ const loadingManager = new THREE.LoadingManager(() => {
 
 // Helper function to handle the smooth camera movement
 // In main.js, REPLACE your old tweenCameraToView function with this:
+// In main.js
+
+// Helper function to handle the smooth camera movement
 function tweenCameraToView(viewIndex) {
     if (viewIndex < 0 || viewIndex >= predefinedViews.length) return;
 
-    const view = predefinedViews[viewIndex];
-    tweenTarget.position.copy(view.position);
-    tweenTarget.lookAt.copy(view.lookAt);
-    isTweeningCamera = true;
+    // --- NEW TWEEN.JS LOGIC ---
 
-    // Update the active button style and name display
+    isTweeningCamera = true;
+    orbitControls.enabled = false; // Disable user input during animation
+
+    const view = predefinedViews[viewIndex];
+
+    // Get the starting position and target
+    const from = {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+        targetX: orbitControls.target.x,
+        targetY: orbitControls.target.y,
+        targetZ: orbitControls.target.z
+    };
+
+    // Define the destination position and target
+    const to = {
+        x: view.position.x,
+        y: view.position.y,
+        z: view.position.z,
+        targetX: view.lookAt.x,
+        targetY: view.lookAt.y,
+        targetZ: view.lookAt.z
+    };
+
+    // Create the animation
+    new TWEEN.Tween(from)
+        .to(to, 1500) // ✅ CONTROL SPEED HERE: 1500 is the duration in milliseconds (1.5 seconds)
+        .easing(TWEEN.Easing.Quadratic.InOut) // ✅ CONTROL FADE: This provides the "fade-in/fade-out" effect
+        .onUpdate((obj) => {
+            // This function runs every frame of the animation
+            camera.position.set(obj.x, obj.y, obj.z);
+            orbitControls.target.set(obj.targetX, obj.targetY, obj.targetZ);
+            orbitControls.update(); // Keep controls in sync
+        })
+        .onComplete(() => {
+            // This function runs once the animation is finished
+            isTweeningCamera = false;
+
+            // THE PIVOT FIX: Set up the camera for 360-degree look-around
+            const direction = new THREE.Vector3();
+            camera.getWorldDirection(direction);
+            orbitControls.target.copy(camera.position).add(direction);
+
+            orbitControls.enabled = true; // Re-enable user controls
+        })
+        .start(); // Start the animation
+
+    // ... (Your code for updating button styles remains the same)
     const viewButtons = document.querySelectorAll('.view-btn');
     viewButtons.forEach((btn, index) => {
         const nameSpan = btn.querySelector('.view-name');
         if (index === viewIndex) {
             btn.classList.add('active');
-            nameSpan.textContent = view.name; // Set the name
+            nameSpan.textContent = view.name;
         } else {
             btn.classList.remove('active');
-            nameSpan.textContent = ''; // Clear the name
+            nameSpan.textContent = '';
         }
     });
 }
 
 // Main function to activate the "Views" mode
+// In main.js
+
 function activateViewsMode() {
     document.getElementById('viewsContainer')?.classList.add('show');
     document.getElementById('desktopCameraModeButton')?.classList.add('disabled');
     document.getElementById('viewsModeButton')?.classList.remove('disabled');
 
-    // ... (rest of your original activateViewsMode code is fine) ...
     fpsControls.unlock && fpsControls.unlock();
     fpsControls.enabled = false;
-    orbitControls.enabled = true;
+    orbitControls.enabled = true; // Will be temporarily disabled by tween
     activeControls = orbitControls;
+
+    // Configure controls for Views Mode
     orbitControls.enablePan = false;
     orbitControls.enableZoom = false;
     orbitControls.autoRotate = false;
+
+    // --- THIS IS THE KEY FOR UNLOCKING THE VIEW ---
+    // IMPORTANT: Explicitly unlock vertical rotation for free-look in this mode.
     orbitControls.minPolarAngle = 0;
     orbitControls.maxPolarAngle = Math.PI;
+
     console.log('Views Mode Activated');
     tweenCameraToView(0); // Move to the first view by default
 }
@@ -1537,79 +1592,47 @@ function checkLandingShake() {
 // --------------------- Animation Loop with FIXED OBB Collision ---------------------
 const clock = new THREE.Clock();
 
-function animate() {
+// In main.js, inside the animate() function
 
+function animate() {
     requestAnimationFrame(animate);
     const delta = clock.getDelta();
-    if (isTweeningCamera) {
-        // Smoothly interpolate position and target
-        camera.position.lerp(tweenTarget.position, TWEEN_SPEED);
-        orbitControls.target.lerp(tweenTarget.lookAt, TWEEN_SPEED);
-
-        // Check if the tween is close enough to finish
-        if (camera.position.distanceTo(tweenTarget.position) < 0.1) {
-            isTweeningCamera = false;
-            // Snap to the final position to ensure accuracy
-            camera.position.copy(tweenTarget.position);
-            orbitControls.target.copy(tweenTarget.lookAt);
-        }
-    }
+    TWEEN.update();
+    // --- REPLACE THE OLD isTweeningCamera BLOCK WITH THIS ---
+    
     if (activeControls === fpsControls) {
-        // Store original camera position before any modifications
+        // ... (rest of your animate function for FPS mode is fine)
         const originalPosition = camera.position.clone();
-
         updateAreaPrompt();
-
-        // Update player OBB position
         updatePlayerOBB();
-
         velocity.set(0, 0, 0);
         direction.set(0, 0, 0);
-
         if (move.forward) direction.z -= 1;
         if (move.backward) direction.z += 1;
         if (move.left) direction.x -= 1;
         if (move.right) direction.x += 1;
         direction.normalize();
-
         const currentSpeed = (isRunning ? runSpeed : baseSpeed) * bunnyHopMultiplier;
         const moveDistance = currentSpeed * delta;
-
-        // Calculate desired movement in world coordinates
         const forward = new THREE.Vector3();
         const right = new THREE.Vector3();
-
         camera.getWorldDirection(forward);
-        forward.y = 0; // Keep movement horizontal
+        forward.y = 0;
         forward.normalize();
-
         right.crossVectors(forward, new THREE.Vector3(0, 1, 0));
         right.normalize();
-
-        // Calculate desired position
         const currentPos = camera.position.clone();
         const desiredPos = currentPos.clone();
-
         desiredPos.add(forward.clone().multiplyScalar(-direction.z * moveDistance));
         desiredPos.add(right.clone().multiplyScalar(direction.x * moveDistance));
-
-        // Apply collision-aware horizontal movement using FIXED OBB
         const validPos = getValidMovementOBB(currentPos, desiredPos);
         camera.position.copy(validPos);
-
-        // Enhanced gravity and vertical collision using FIXED OBB
         verticalVelocity += gravity * delta;
-
-        // Calculate next vertical position
         const nextY = camera.position.y + verticalVelocity * delta;
         const nextPos = new THREE.Vector3(camera.position.x, nextY, camera.position.z);
-
-        // Check vertical collision based on movement direction
         if (verticalVelocity > 0) {
-            // Moving up (jumping) - check head collision
             const upCheck = checkVerticalCollisionOBB(nextPos, 'up');
             if (upCheck.collision) {
-                // Hit ceiling/roof - stop upward movement
                 verticalVelocity = 0;
                 camera.position.y = upCheck.height - playerHeight - 0.1;
                 console.log('Head hit ceiling at Y:', upCheck.height);
@@ -1617,10 +1640,8 @@ function animate() {
                 camera.position.y = nextY;
             }
         } else {
-            // Moving down (falling) - check ground collision
             const downCheck = checkVerticalCollisionOBB(nextPos, 'down');
             if (downCheck.collision) {
-                // Hit ground/floor
                 verticalVelocity = 0;
                 canJump = true;
                 camera.position.y = downCheck.height;
@@ -1631,8 +1652,6 @@ function animate() {
                 camera.position.y = nextY;
             }
         }
-
-        // Fallback ground collision (original system as backup)
         let currentGround = (false) ? groundHeight + crouchOffset : groundHeight;
         if (camera.position.y <= currentGround) {
             camera.position.y = currentGround;
@@ -1642,35 +1661,27 @@ function animate() {
                 bunnyHopMultiplier = 1;
             }
         }
-
-        // ALL COLLISION DETECTION IS NOW COMPLETE
-        // Update camera shake system (this won't affect collision)
         checkLandingShake();
         updateMovementShake();
         calculateCameraShake(delta);
-
-        // Apply shake offset ONLY for rendering
         if (cameraShake.shakeOffset.lengthSq() > 0) {
             camera.position.add(cameraShake.shakeOffset);
         }
-
     } else {
-        orbitControls.update();
+        // This update handles user input when not tweening
+        if (!isTweeningCamera) {
+            orbitControls.update();
+        }
     }
 
     renderer.render(scene, camera);
 
-    // CRITICAL: Remove shake offset after rendering so collision detection uses clean position
     if (activeControls === fpsControls && cameraShake.shakeOffset.lengthSq() > 0) {
         camera.position.sub(cameraShake.shakeOffset);
     }
 
-    // Jump on hold logic
     if (jumpPressed && canJump) {
-        const headCheck = checkVerticalCollisionOBB(
-            new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 1, camera.position.z),
-            'up'
-        );
+        const headCheck = checkVerticalCollisionOBB(new THREE.Vector3(camera.position.x, camera.position.y + jumpStrength * 1, camera.position.z), 'up');
         if (!headCheck.collision) {
             verticalVelocity = jumpStrength;
             canJump = false;

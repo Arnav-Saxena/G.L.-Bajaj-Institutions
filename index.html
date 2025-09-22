@@ -788,12 +788,12 @@
     bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
-    width: 40%;
+    width: auto;
+    height:40px;
     max-width: 400px;
     background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
     border-radius: 15px;
-    padding: 10px;
+    padding: 2px;
     display: none; /* Initially hidden */
     justify-content: space-around;
     align-items: center;
@@ -814,23 +814,22 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
     font-family: 'Orbitron', monospace;
-    font-size: 16px;
- width: auto;
- min-width: 45px;
-    height: 45px;
+    font-size: 15px;
+ width: 30px;
+    height: 30px;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
-    padding: 0 14px;
         display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px; /* Space between number and name */
+    gap: 10px; /* Space between number and name */
     overflow: hidden;
+    margin: 10px;
 }
 .view-name {
     display: none; /* Hide the name by default */
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     white-space: nowrap; /* Prevent name from wrapping */
 }
@@ -844,8 +843,8 @@
     border-color: #64b5f6;
     transform: scale(1.1);
     box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
-        min-width: 150px;
-    padding: 0 20px;
+width: auto;
+    padding: 5px;
     justify-content: space-between;
 }
 .view-btn.active .view-name {
@@ -1400,6 +1399,7 @@
             }, 500);
         });
     </script>
+    <script src="https://unpkg.com/@tweenjs/tween.js@21.0.0/dist/tween.umd.js"></script>
     <script type="module" src="/main.js"></script>
 
 </body>
