@@ -14,14 +14,16 @@ const TWEEN_SPEED = 0.05; // Controls the speed of the camera transition
 
 // Define your 5 camera views here
 const predefinedViews = [
-    {
-        position: new THREE.Vector3(114.54, 45, -5
-        ), lookAt: new THREE.Vector3(114.54, 45,40), name: 'Main Entrance'
-    },
-    { position: new THREE.Vector3(50, 20, -50), lookAt: new THREE.Vector3(80, 5, -20), name: 'Acad. Block 1' },
-    { position: new THREE.Vector3(40, 15, 40), lookAt: new THREE.Vector3(0, 0, 0), name: 'Main Ground' },
-    { position: new THREE.Vector3(20, 10, -80), lookAt: new THREE.Vector3(20, 5, -60), name: 'Sports Courts' },
-    { position: new THREE.Vector3(-20, 30, 80), lookAt: new THREE.Vector3(20, 5, 60), name: 'Hostel Area' }
+    { position: new THREE.Vector3(114.54, 45, -5), lookAt: new THREE.Vector3(114.54, 45, 40), name: 'Main Entrance' },
+    { position: new THREE.Vector3(166.39, 41.56, -52.08), lookAt: new THREE.Vector3(90.34, 1.85, -51.90), name: 'Acad. Block 1' },
+    { position: new THREE.Vector3(77.61, 19.22, -8.10), lookAt: new THREE.Vector3(38.52, 1.85, 20.43), name: 'Main Ground' },
+    { position: new THREE.Vector3(-46.67, 82.05, -114.36), lookAt: new THREE.Vector3(14.62, 1.85, -55.86), name: 'Sports Courts' },
+    { position: new THREE.Vector3(39.35, 1.85, 20.43), lookAt: new THREE.Vector3(39.19, 9.86, 62.36), name: 'Boys Hostel - 2' },
+    { position: new THREE.Vector3(7.16, 16.75, -55.86), lookAt: new THREE.Vector3(-29.10, 19.70, -10.40), name: 'Girls Hostel' },
+    { position: new THREE.Vector3(42.59, 31.89, -11.47), lookAt: new THREE.Vector3(75.10, 27.27, 6.39), name: 'Academic Block - 2' },
+    { position: new THREE.Vector3(7.44, 19.80, 34.12), lookAt: new THREE.Vector3(-25.32, 15.47, 54.87), name: 'BCA/MCA Building' },
+    { position: new THREE.Vector3(136.01, 1.85, 44.73), lookAt: new THREE.Vector3(114.65, 9.87, 55.91), name: 'GLBIMR' },
+    { position: new THREE.Vector3(0, 400, 1), lookAt: new THREE.Vector3(0, 0, 0), name: 'Top View' },
 ];
 let jumpPressed = false;
 let yellowCuboids = [];

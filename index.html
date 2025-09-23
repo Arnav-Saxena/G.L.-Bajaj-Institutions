@@ -749,7 +749,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-                        font-size: 18px;
+            font-size: 18px;
         }
 
         #hamburgerIcon {
@@ -784,110 +784,121 @@
         }
 
         #viewsContainer {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: auto;
-    height:30px;
-    max-width: 400px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 15px;
-    padding: 2px;
-    display: none; /* Initially hidden */
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1000;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    opacity: 0;
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-}
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            height: 30px;
+            max-width: 400px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 2px;
+            display: none;
+            /* Initially hidden */
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
 
-#viewsContainer.show {
-    display: flex;
-    opacity: 1;
-}
+        #viewsContainer.show {
+            display: flex;
+            opacity: 1;
+        }
 
-.view-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    font-family: 'Orbitron', monospace;
-    font-size: 10px;
- width: 20px;
-    height: 20px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-        display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px; /* Space between number and name */
-    overflow: hidden;
-    margin: 10px;
-}
-.view-name {
-    display: none; /* Hide the name by default */
-    font-size: 10px;
-    font-weight: 500;
-    white-space: nowrap; /* Prevent name from wrapping */
-}
-.view-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.1);
-}
+        .view-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            /* Space between number and name */
+            overflow: hidden;
+            margin: 10px;
+        }
 
-.view-btn.active {
-    background: #2196f3;
-    border-color: #64b5f6;
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
-width: auto;
-    padding: 5px;
-    justify-content: space-between;
-}
-.view-btn.active .view-name {
-    display: inline; /* Show the name only on the active button */
-}
-/* Add a new style for the camera button when in "Views" mode */
-#desktopCameraModeButton.views-mode {
-    background: rgba(156, 39, 176, 0.8); /* A distinct purple color */
-    border-color: rgba(156, 39, 176, 1);
-}
+        .view-name {
+            display: none;
+            /* Hide the name by default */
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+            /* Prevent name from wrapping */
+        }
 
-#desktopCameraModeButton.views-mode:hover {
-    background: rgba(156, 39, 176, 1);
-}
-#viewsModeButton {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    background: rgba(156, 39, 176, 0.8);
-    border: 2px solid rgba(156, 39, 176, 1);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 15px;
-    text-align: center;
-    min-width: 110px;
-    transition: all 0.3s ease;
-}
+        .view-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
 
-#viewsModeButton:hover:not(.disabled) {
-    background: rgba(156, 39, 176, 1);
-    transform: translateX(-50%) scale(1.05);
-}
+        .view-btn.active {
+            background: #2196f3;
+            border-color: #64b5f6;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+            width: auto;
+            padding: 5px;
+            justify-content: space-between;
+        }
 
-/* Generic Disabled Style for Buttons */
-.disabled {
-    opacity: 0.6;
-}
+        .view-btn.active .view-name {
+            display: inline;
+            /* Show the name only on the active button */
+        }
+
+        /* Add a new style for the camera button when in "Views" mode */
+        #desktopCameraModeButton.views-mode {
+            background: rgba(156, 39, 176, 0.8);
+            /* A distinct purple color */
+            border-color: rgba(156, 39, 176, 1);
+        }
+
+        #desktopCameraModeButton.views-mode:hover {
+            background: rgba(156, 39, 176, 1);
+        }
+
+        #viewsModeButton {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(156, 39, 176, 0.8);
+            border: 2px solid rgba(156, 39, 176, 1);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 15px;
+            text-align: center;
+            min-width: 110px;
+            transition: all 0.3s ease;
+        }
+
+        #viewsModeButton:hover:not(.disabled) {
+            background: rgba(156, 39, 176, 1);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* Generic Disabled Style for Buttons */
+        .disabled {
+            opacity: 0.6;
+        }
     </style>
 </head>
 
@@ -1084,28 +1095,48 @@ width: auto;
         <button id="desktopCameraModeButton">Orbit Mode</button>
     </div>
     <button id="viewsModeButton" class="disabled">Views</button>
-<div id="viewsContainer">
-    <button class="view-btn" data-view="0">
-        <span class="view-num">1</span>
-        <span class="view-name"></span>
-    </button>
-    <button class="view-btn" data-view="1">
-        <span class="view-num">2</span>
-        <span class="view-name"></span>
-    </button>
-    <button class="view-btn" data-view="2">
-        <span class="view-num">3</span>
-        <span class="view-name"></span>
-    </button>
-    <button class="view-btn" data-view="3">
-        <span class="view-num">4</span>
-        <span class="view-name"></span>
-    </button>
-    <button class="view-btn" data-view="4">
-        <span class="view-num">5</span>
-        <span class="view-name"></span>
-    </button>
-</div>
+    <div id="viewsContainer">
+        <button class="view-btn" data-view="0">
+            <span class="view-num">1</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="1">
+            <span class="view-num">2</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="2">
+            <span class="view-num">3</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="3">
+            <span class="view-num">4</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="4">
+            <span class="view-num">5</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="5">
+            <span class="view-num">6</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="6">
+            <span class="view-num">7</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="7">
+            <span class="view-num">8</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="8">
+            <span class="view-num">9</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="9">
+            <span class="view-num">10</span>
+            <span class="view-name"></span>
+        </button>
+    </div>
     <script>
         // Global loading state
         window.loadingState = {
@@ -1190,60 +1221,60 @@ width: auto;
         // Desktop Camera Mode Toggle Logic
         // In index.html, REPLACE your function with this one.
 
-                // 1. This function now reliably toggles between Orbit and FPS
-    function initDesktopCameraToggle() {
-        const cameraModeButton = document.getElementById('desktopCameraModeButton');
-        let isOrbitMode = true; // Default state is Orbit
+        // 1. This function now reliably toggles between Orbit and FPS
+        function initDesktopCameraToggle() {
+            const cameraModeButton = document.getElementById('desktopCameraModeButton');
+            let isOrbitMode = true; // Default state is Orbit
 
-        cameraModeButton.addEventListener('click', () => {
-            // Check if the button is disabled (which means we are currently in Views mode)
-            if (cameraModeButton.classList.contains('disabled')) {
-                // --- REACTIVATION LOGIC ---
-                // If the button is faded and clicked, we want to exit Views and switch back to Orbit.
-                isOrbitMode = true; // Reset the state to Orbit.
-                window.activateOrbitControls(); // This function handles all the UI and camera changes.
+            cameraModeButton.addEventListener('click', () => {
+                // Check if the button is disabled (which means we are currently in Views mode)
+                if (cameraModeButton.classList.contains('disabled')) {
+                    // --- REACTIVATION LOGIC ---
+                    // If the button is faded and clicked, we want to exit Views and switch back to Orbit.
+                    isOrbitMode = true; // Reset the state to Orbit.
+                    window.activateOrbitControls(); // This function handles all the UI and camera changes.
 
-                // Manually update the button's appearance since activateOrbitControls doesn't do it.
-                cameraModeButton.textContent = 'Orbit Mode';
-                cameraModeButton.classList.remove('fps-mode');
-
-            } else {
-                // --- NORMAL TOGGLE LOGIC ---
-                // If the button is already active, just toggle between Orbit and FPS.
-                isOrbitMode = !isOrbitMode;
-                if (isOrbitMode) {
-                    window.activateOrbitControls();
+                    // Manually update the button's appearance since activateOrbitControls doesn't do it.
                     cameraModeButton.textContent = 'Orbit Mode';
                     cameraModeButton.classList.remove('fps-mode');
+
                 } else {
-                    window.activateFPSControls();
-                    cameraModeButton.textContent = 'FPS Mode';
-                    cameraModeButton.classList.add('fps-mode');
+                    // --- NORMAL TOGGLE LOGIC ---
+                    // If the button is already active, just toggle between Orbit and FPS.
+                    isOrbitMode = !isOrbitMode;
+                    if (isOrbitMode) {
+                        window.activateOrbitControls();
+                        cameraModeButton.textContent = 'Orbit Mode';
+                        cameraModeButton.classList.remove('fps-mode');
+                    } else {
+                        window.activateFPSControls();
+                        cameraModeButton.textContent = 'FPS Mode';
+                        cameraModeButton.classList.add('fps-mode');
+                    }
                 }
-            }
+            });
+        }
+
+        // 2. This function for the "Views" button is correct and needs no changes
+        function initViewsModeButton() {
+            const viewsModeButton = document.getElementById('viewsModeButton');
+            const cameraModeButton = document.getElementById('desktopCameraModeButton');
+
+            viewsModeButton.addEventListener('click', () => {
+                window.activateViewsMode();
+                // When in Views mode, disable the top button and enable this one
+                cameraModeButton.classList.add('disabled');
+                viewsModeButton.classList.remove('disabled');
+            });
+        }
+
+        // 3. This ensures all the setup functions are called when the page is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            startLoading();
+            initControlsMenu();
+            initDesktopCameraToggle(); // Call the corrected top button function
+            initViewsModeButton();    // Call the bottom button function
         });
-    }
-
-                // 2. This function for the "Views" button is correct and needs no changes
-                function initViewsModeButton() {
-                    const viewsModeButton = document.getElementById('viewsModeButton');
-                    const cameraModeButton = document.getElementById('desktopCameraModeButton');
-
-                    viewsModeButton.addEventListener('click', () => {
-                        window.activateViewsMode();
-                        // When in Views mode, disable the top button and enable this one
-                        cameraModeButton.classList.add('disabled');
-                        viewsModeButton.classList.remove('disabled');
-                    });
-                }
-
-                // 3. This ensures all the setup functions are called when the page is ready
-                document.addEventListener('DOMContentLoaded', () => {
-                    startLoading();
-                    initControlsMenu();
-                    initDesktopCameraToggle(); // Call the corrected top button function
-                    initViewsModeButton();    // Call the bottom button function
-                });
 
         function startLoading() {
             const statusText = document.getElementById('statusText');
