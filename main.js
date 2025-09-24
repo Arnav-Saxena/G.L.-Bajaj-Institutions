@@ -4,6 +4,10 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
+
+// This will track which debug meshes are currently visible in the scene
+const visibleDebugMeshes = new Map(); // Maps an OBB object to its THREE.Mesh
+
 // Add these variables near the top of main.js
 let isTweeningCamera = false;
 const tweenTarget = {
@@ -12,10 +16,29 @@ const tweenTarget = {
 };
 const TWEEN_SPEED = 0.05; // Controls the speed of the camera transition
 
+// Smart LOD System (no new models required)
+const SMART_LOD = {
+    enabled: true,
+    updateInterval: 0.3,
+    lastUpdate: 0,
+
+    distances: {
+        full: 80,      // Full quality within 80 units
+        reduced: 200,  // Reduced quality within 200 units
+        minimal: 400,  // Minimal quality within 400 units
+        // Beyond 400 = hidden
+    },
+
+    // Track which objects are at which LOD level
+    meshLODLevels: new Map(),
+    originalGeometries: new Map(),
+    culledMeshes: new Set()
+};
+
 // Define your 5 camera views here
 const predefinedViews = [
     { position: new THREE.Vector3(114.54, 45, -5), lookAt: new THREE.Vector3(114.54, 45, 40), name: 'Main Entrance' },
-    { position: new THREE.Vector3(166.39, 41.56, -52.08), lookAt: new THREE.Vector3(90.34, 1.85, -51.90), name: 'Acad. Block 1' },
+    { position: new THREE.Vector3(189.79, 38.72, -52.36), lookAt: new THREE.Vector3(90.37, 0.36, -52.36), name: 'Acad. Block 1' },
     { position: new THREE.Vector3(77.61, 19.22, -8.10), lookAt: new THREE.Vector3(38.52, 1.85, 20.43), name: 'Main Ground' },
     { position: new THREE.Vector3(-46.67, 82.05, -114.36), lookAt: new THREE.Vector3(14.62, 1.85, -55.86), name: 'Sports Courts' },
     { position: new THREE.Vector3(39.35, 1.85, 20.43), lookAt: new THREE.Vector3(39.19, 9.86, 62.36), name: 'Boys Hostel - 2' },
@@ -216,6 +239,186 @@ class OBB {
         return mesh;
     }
 }
+/**
+ * Dynamically shows or hides OBB debug meshes based on player proximity.
+ * This function should be called every frame in the animate() loop.
+ */
+function updateDynamicDebugOBBs() {
+    // If the debug feature is turned off, make sure to remove any leftover meshes.
+    if (!window.DEBUG_COLLIDERS) {
+        if (visibleDebugMeshes.size > 0) {
+            visibleDebugMeshes.forEach(mesh => scene.remove(mesh));
+            visibleDebugMeshes.clear();
+        }
+        return; // Do nothing else
+    }
+
+    const playerPosition = camera.position;
+    const visibilityRadius = 50;
+    const obbsThatShouldBeVisible = new Set();
+
+    // 1. First, determine which OBBs are currently in range
+    for (const obb of collisionOBBs) {
+        if (playerPosition.distanceTo(obb.center) <= visibilityRadius) {
+            obbsThatShouldBeVisible.add(obb);
+        }
+    }
+
+    // 2. Remove debug meshes that are for OBBs no longer in range
+    visibleDebugMeshes.forEach((mesh, obb) => {
+        if (!obbsThatShouldBeVisible.has(obb)) {
+            scene.remove(mesh);
+            visibleDebugMeshes.delete(obb);
+        }
+    });
+
+    // 3. Add new debug meshes for OBBs that have just come into range
+    obbsThatShouldBeVisible.forEach(obb => {
+        // Only create a mesh if it's not already visible
+        if (!visibleDebugMeshes.has(obb)) {
+            const debugMesh = obb.createDebugMesh();
+            scene.add(debugMesh);
+            visibleDebugMeshes.set(obb, debugMesh); // Add it to our tracking map
+        }
+    });
+}
+
+// Smart LOD Functions (work with existing model)
+function initializeSmartLOD(rootObject) {
+    console.log('Initializing Smart LOD system...');
+
+    rootObject.traverse((child) => {
+        if (child.isMesh && child.geometry) {
+            // Store original geometry
+            SMART_LOD.originalGeometries.set(child.uuid, {
+                geometry: child.geometry.clone(),
+                material: child.material,
+                originalVertexCount: child.geometry.attributes.position.count
+            });
+
+            // Set initial LOD level
+            SMART_LOD.meshLODLevels.set(child.uuid, 'full');
+        }
+    });
+
+    console.log(`Smart LOD initialized for ${SMART_LOD.originalGeometries.size} meshes`);
+}
+
+function updateSmartLOD(playerPosition, delta) {
+    if (!SMART_LOD.enabled) return;
+
+    SMART_LOD.lastUpdate += delta;
+    if (SMART_LOD.lastUpdate < SMART_LOD.updateInterval) return;
+
+    SMART_LOD.lastUpdate = 0;
+
+    // Update each mesh's LOD based on distance
+    scene.traverse((child) => {
+        if (child.isMesh && SMART_LOD.originalGeometries.has(child.uuid)) {
+            updateMeshLOD(child, playerPosition);
+        }
+    });
+}
+
+function updateMeshLOD(mesh, playerPosition) {
+    const distance = mesh.position.distanceTo(playerPosition);
+    const currentLevel = SMART_LOD.meshLODLevels.get(mesh.uuid);
+    let targetLevel;
+
+    // Determine target LOD level
+    if (distance > SMART_LOD.distances.minimal) {
+        targetLevel = 'hidden';
+    } else if (distance > SMART_LOD.distances.reduced) {
+        targetLevel = 'minimal';
+    } else if (distance > SMART_LOD.distances.full) {
+        targetLevel = 'reduced';
+    } else {
+        targetLevel = 'full';
+    }
+
+    // Apply LOD change if needed
+    if (currentLevel !== targetLevel) {
+        applyLODLevel(mesh, targetLevel);
+        SMART_LOD.meshLODLevels.set(mesh.uuid, targetLevel);
+    }
+}
+
+function applyLODLevel(mesh, level) {
+    const original = SMART_LOD.originalGeometries.get(mesh.uuid);
+
+    switch (level) {
+        case 'hidden':
+            mesh.visible = false;
+            SMART_LOD.culledMeshes.add(mesh.uuid);
+            break;
+
+        case 'minimal':
+            mesh.visible = true;
+            SMART_LOD.culledMeshes.delete(mesh.uuid);
+            // Reduce geometry complexity by 75%
+            simplifyGeometry(mesh, 0.25);
+            // Lower texture resolution
+            scaleMaterialTextures(mesh.material, 0.25);
+            break;
+
+        case 'reduced':
+            mesh.visible = true;
+            SMART_LOD.culledMeshes.delete(mesh.uuid);
+            // Reduce geometry complexity by 50%
+            simplifyGeometry(mesh, 0.5);
+            // Medium texture resolution
+            scaleMaterialTextures(mesh.material, 0.5);
+            break;
+
+        case 'full':
+            mesh.visible = true;
+            SMART_LOD.culledMeshes.delete(mesh.uuid);
+            // Restore original geometry
+            mesh.geometry.dispose();
+            mesh.geometry = original.geometry.clone();
+            // Restore full texture resolution
+            scaleMaterialTextures(mesh.material, 1.0);
+            break;
+    }
+}
+
+function simplifyGeometry(mesh, quality) {
+    const original = SMART_LOD.originalGeometries.get(mesh.uuid);
+    const positions = original.geometry.attributes.position.array;
+    const targetCount = Math.floor(positions.length * quality / 3) * 3; // Ensure multiple of 3
+
+    if (targetCount < positions.length) {
+        // Simple decimation - take every Nth vertex
+        const step = Math.floor(positions.length / targetCount);
+        const newPositions = [];
+
+        for (let i = 0; i < positions.length; i += step * 3) {
+            if (newPositions.length < targetCount) {
+                newPositions.push(positions[i], positions[i + 1], positions[i + 2]);
+            }
+        }
+
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.BufferGeometry();
+        mesh.geometry.setAttribute('position', new THREE.Float32BufferAttribute(newPositions, 3));
+        mesh.geometry.computeVertexNormals();
+    }
+}
+
+function scaleMaterialTextures(material, scale) {
+    if (!material) return;
+
+    // Handle both single materials and material arrays
+    const materials = Array.isArray(material) ? material : [material];
+
+    materials.forEach(mat => {
+        if (mat.map && mat.map.image) {
+            // This is a simplified approach - in practice you'd want texture mipmaps
+            mat.map.magFilter = scale < 1 ? THREE.LinearFilter : THREE.LinearFilter;
+            mat.map.minFilter = scale < 0.5 ? THREE.LinearMipMapLinearFilter : THREE.LinearMipMapLinearFilter;
+        }
+    });
+}
 
 // ✅ SMART LOADING MANAGER
 const loadingManager = new THREE.LoadingManager(() => {
@@ -402,11 +605,11 @@ fpsControls.enabled = false;
 
 // --------------------- Movement ---------------------
 const move = { forward: false, backward: false, left: false, right: false };
-let baseSpeed = 6, runSpeed = 12, isRunning = false;
+let baseSpeed = 5, runSpeed = 10, isRunning = false;
 let velocity = new THREE.Vector3(), direction = new THREE.Vector3();
 
 // Jump / Gravity
-let canJump = false, verticalVelocity = 0, gravity = -18, jumpStrength = 6;
+let canJump = false, verticalVelocity = 0, gravity = -18, jumpStrength = 5.5;
 
 // Bunny hop
 let bunnyHopMultiplier = 1, maxBunnyHop = 3;
@@ -417,7 +620,7 @@ let groundHeight = 1.85;
 
 // --------------------- FIXED OBB COLLISION SYSTEM ---------------------
 const collisionOBBs = [];
-const debugMeshes = [];
+
 let playerOBB;
 
 // Player collision properties
@@ -477,7 +680,6 @@ function checkHorizontalCollisionOBB(position) {
 
     return false;
 }
-
 // Check vertical collision using FIXED OBB
 function checkVerticalCollisionOBB(cameraPos, direction = 'down') {
     if (!playerOBB) return { collision: false, height: cameraPos.y };
@@ -613,11 +815,7 @@ function addToOBBCollision(mesh) {
         console.log(`Added OBB collision: ${mesh.name || 'unnamed'}`);
 
         // Create debug visualization if enabled
-        if (window.DEBUG_COLLIDERS) {
-            const debugMesh = obb.createDebugMesh();
-            scene.add(debugMesh);
-            debugMeshes.push(debugMesh);
-        }
+
     }
 }
 
@@ -1300,22 +1498,7 @@ window.addEventListener('keydown', (e) => {
     // Debug key to toggle OBB visualization
     if (e.code === 'KeyB') {
         window.DEBUG_COLLIDERS = !window.DEBUG_COLLIDERS;
-        console.log('Debug OBBs:', window.DEBUG_COLLIDERS);
-
-        // Remove existing debug meshes
-        debugMeshes.forEach(mesh => scene.remove(mesh));
-        debugMeshes.length = 0;
-
-        // Re-create debug meshes if enabled
-        if (window.DEBUG_COLLIDERS && collisionOBBs.length > 0) {
-            console.log('Creating debug visualization for OBBs...');
-            collisionOBBs.forEach((obb, index) => {
-                const debugMesh = obb.createDebugMesh();
-                scene.add(debugMesh);
-                debugMeshes.push(debugMesh);
-                console.log(`Debug OBB ${index}: center (${obb.center.x.toFixed(1)}, ${obb.center.y.toFixed(1)}, ${obb.center.z.toFixed(1)})`);
-            });
-        }
+        console.log('Dynamic Debug OBBs:', window.DEBUG_COLLIDERS ? 'ON' : 'OFF');
     }
 
     // Debug collision logging
@@ -1368,6 +1551,9 @@ loader.load('/model.glb',
         orbitControls.target.copy(center);
         orbitControls.update();
 
+        // Initialize Smart LOD system BEFORE collision setup
+        initializeSmartLOD(gltf.scene);
+
         // Wait a frame for transformations to apply, then setup FIXED OBB collision detection
         requestAnimationFrame(() => {
             console.log('Setting up FIXED OBB collision detection...');
@@ -1410,10 +1596,8 @@ loader.load('/model.glb',
                             const size = meshBox.getSize(new THREE.Vector3());
 
                             // If object is large enough and not likely to be a small detail, treat as collidable
-
                             shouldAddToCollision = true;
                             console.log(`Added auto-detected mesh: ${child.name || 'unnamed'} (size: ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)})`);
-
                         }
                     }
 
@@ -1484,12 +1668,12 @@ let cameraShake = {
     intensity: 0,
     frequency: 0,
     time: 0,
-    walkShakeIntensity: 0.06,
-    sprintShakeIntensity: 0.1,
+    walkShakeIntensity: 0.04,//0.06
+    sprintShakeIntensity: 0.08,//0.1
     walkShakeFrequency: 8,
     sprintShakeFrequency: 12,
-    landShakeIntensity: 0.2,
-    landShakeDuration: 0.4,
+    landShakeIntensity: 0.08,
+    landShakeDuration: 0.15,
     currentLandShake: 0,
     landShakeDecay: 0,
     shakeOffset: new THREE.Vector3()
@@ -1517,10 +1701,12 @@ function calculateCameraShake(delta) {
     let totalIntensity = cameraShake.intensity;
 
     // Add landing shake
+    // In calculateCameraShake, use exponential decay instead of linear:
     if (cameraShake.currentLandShake > 0) {
         totalIntensity += cameraShake.currentLandShake;
-        cameraShake.currentLandShake -= cameraShake.landShakeDecay * delta;
-        if (cameraShake.currentLandShake < 0) {
+        // Exponential decay feels more natural
+        cameraShake.currentLandShake *= Math.pow(0.01, delta / cameraShake.landShakeDuration);
+        if (cameraShake.currentLandShake < 0.001) {
             cameraShake.currentLandShake = 0;
         }
     }
@@ -1579,7 +1765,7 @@ function checkLandingShake() {
         const fallVelocity = Math.abs(movementState.landingVelocity);
 
         if (fallVelocity > 2) { // Only shake for significant falls
-            const intensity = Math.min(fallVelocity * 0.01, cameraShake.landShakeIntensity);
+            const intensity = Math.min(fallVelocity * 0.005, cameraShake.landShakeIntensity);
 
             // Trigger landing shake
             cameraShake.currentLandShake = intensity;
@@ -1678,6 +1864,7 @@ function animate() {
             orbitControls.update();
         }
     }
+    updateDynamicDebugOBBs();
 
     renderer.render(scene, camera);
 
@@ -1807,3 +1994,6 @@ window.debugOBBCreation = function (meshName) {
 
     return fixedOBB;
 };
+
+
+//chaing the unit of 50
