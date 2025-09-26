@@ -46,7 +46,8 @@ const predefinedViews = [
     { position: new THREE.Vector3(42.59, 31.89, -11.47), lookAt: new THREE.Vector3(75.10, 27.27, 6.39), name: 'Academic Block - 2' },
     { position: new THREE.Vector3(7.44, 19.80, 34.12), lookAt: new THREE.Vector3(-25.32, 15.47, 54.87), name: 'BCA/MCA Building' },
     { position: new THREE.Vector3(136.01, 1.85, 44.73), lookAt: new THREE.Vector3(114.65, 9.87, 55.91), name: 'GLBIMR' },
-    { position: new THREE.Vector3(0, 400, 1), lookAt: new THREE.Vector3(0, 0, 0), name: 'Top View' },
+    { position: new THREE.Vector3(55, 26.5, 65), lookAt: new THREE.Vector3(52.38, 0.50, -8.89), name: 'Boys-Hostel Balcony View' },
+    { position: new THREE.Vector3(-31.93, 31, 5.05), lookAt: new THREE.Vector3(0, 0, 0), name: 'Girls-Hostel Balcony View' },
 ];
 let jumpPressed = false;
 let yellowCuboids = [];
@@ -594,7 +595,7 @@ orbitControls.minPolarAngle = currentPolar;
 orbitControls.maxPolarAngle = currentPolar;
 // Auto-Rotate
 orbitControls.autoRotate = true;
-orbitControls.autoRotateSpeed = -1.0; // Adjust speed as needed (default is 2.0)
+orbitControls.autoRotateSpeed = -1.3; // Adjust speed as needed (default is 2.0)
 orbitControls.enableZoom = false;
 orbitControls.enablePan = false;
 
@@ -1994,6 +1995,3 @@ window.debugOBBCreation = function (meshName) {
 
     return fixedOBB;
 };
-
-
-//chaing the unit of 50
