@@ -2,7 +2,7 @@
     "cleanUrls": true,
     "rewrites": [
         {
-            "source": "/Dashboard",
+            "source": "/",
             "destination": "/dashboard.html"
         }
     ]
