@@ -2,12 +2,12 @@
     "cleanUrls": true,
     "rewrites": [
         {
-            "source": "/Dashboard",
+            "source": "/dashboard",
             "destination": "/dashboard.html"
         },
         {
             "source": "/SHD",
-            "destination": "SHD.html"
+            "destination": "/SHD.html"
         },
         {
             "source": "/contact",
