@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G.L. Bajaj Institutions</title>
+    <link rel="icon" type="image/x-icon" href="/Logo.ico">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ---- default: keep rotation overlay hidden in landscape ---- */
+        #rotationMessage {
+            display: none;
+        }
+
+        /* ---- portrait-mode: black overlay + show rotate.png ---- */
+        @media screen and (orientation: portrait) {
+            body {
+                background: black !important;
+                color: white !important;
+                overflow: hidden;
+            }
+
+            /* hide everything by default */
+            * {
+                visibility: hidden;
+            }
+
+            /* make the rotation overlay and its children visible */
+            #rotationMessage,
+            #rotationMessage * {
+                visibility: visible;
+            }
+
+            /* full-screen centered overlay */
+            #rotationMessage {
+                display: flex;
+                position: fixed;
+                inset: 0;
+                background: black;
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+
+            /* image styling - replace rotate.png with your file (already named rotate.png) */
+            #rotationMessage img {
+                max-width: 60vw;
+                height: auto;
+                margin-bottom: 18px;
+                display: block;
+            }
+
+            /* make sure text is readable */
+            #rotationMessage h2,
+            #rotationMessage p,
+            #rotationMessage .rotate-icon {
+                color: #ffffff;
+                -webkit-text-fill-color: #ffffff;
+            }
+        }
+
+        #audioToggleButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            height: 35px;
+            /* sits between camera and controls buttons - adjust if needed */
+            z-index: 10;
+            background: rgba(76, 175, 80, 0.8);
+            border: 2px solid rgba(76, 175, 80, 1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            padding: 5px 10px;
+            border-radius: 8px;
+
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'inter', sans-serif;
+            font-weight: 500;
+        }
+
+        #audioToggleButton:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+
+        #audioToggleButton:active {
+            background: rgb(70, 161, 73);
+            transform: scale(1);
+        }
+
+        #audioToggleButton.playing {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            border-color: rgba(255, 255, 255, 0.14);
+        }
+
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .top-left {
+            position: absolute;
+            top: 12px;
+            left: 20px;
+            z-index: 10;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .top-right {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            color: white;
+            font-weight: bold;
+        }
+
+        select {
+            padding: 6px 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        /* Desktop Controls Menu */
+        #controlsMenu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            z-index: 1000;
+            min-width: 400px;
+            max-width: 500px;
+            display: none;
+
+            max-height: 70vh;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+        }
+
+        #controlsMenu::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #controlsMenu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #controlsMenu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.35);
+            border-radius: 10px;
+            background-clip: padding-box;
+            border: 2px solid transparent;
+        }
+
+        #controlsMenu::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        #controlsMenu.show {
+            display: block;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .controls-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #64b5f6, #2196f3);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .close-btn {
+            background: rgba(244, 67, 54, 0.8);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(244, 67, 54, 1);
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #90caf9;
+        }
+
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-item:last-child {
+            border-bottom: none;
+        }
+
+        .control-key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .control-desc {
+            flex-grow: 1;
+            margin-left: 15px;
+            color: #e0e0e0;
+        }
+
+        /* Controls Menu Button for Desktop */
+        #controlsMenuBtn {
+            position: absolute;
+            top: 20px;
+            right: 187px;
+            height: 35px;
+            /* Moved left to make room for camera button */
+            z-index: 10;
+            background: rgba(33, 150, 243, 0.8);
+            border: 2px solid rgba(33, 150, 243, 1);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            display: block;
+
+        }
+
+        #controlsMenuBtn:hover {
+            background: rgba(33, 150, 243, 1);
+            transform: scale(1.05);
+        }
+
+        /* Desktop Camera Mode Button */
+        #desktopCameraModeButton {
+            position: absolute;
+            height: 35px;
+            top: 20px;
+            right: 70px;
+            z-index: 10;
+            background: rgba(76, 175, 80, 0.8);
+            border: 2px solid rgba(76, 175, 80, 1);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            display: block;
+            font-size: 15px;
+            text-align: center;
+            min-width: 110px;
+        }
+
+        #desktopCameraModeButton:hover {
+            background: rgba(76, 175, 80, 1);
+            transform: scale(1.05);
+        }
+
+        #desktopCameraModeButton.fps-mode {
+            background: rgba(255, 152, 0, 0.8);
+            border-color: rgba(255, 152, 0, 1);
+        }
+
+        #desktopCameraModeButton.fps-mode:hover {
+            background: rgba(255, 152, 0, 1);
+        }
+
+
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 35%, #16213e 70%, #0f3460 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #loadingScreen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-content {
+            text-align: center;
+            max-width: 600px;
+            transform: translateY(-5%);
+            /* Shifts the element up by 20% of its own height */
+        }
+
+        .main-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #64b5f6, #42a5f5, #2196f3, #1976d2);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 20px rgba(33, 150, 243, 0.3));
+            }
+
+            to {
+                filter: drop-shadow(0 0 30px rgba(33, 150, 243, 0.6));
+            }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #b0bec5;
+            font-weight: 300;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .status-container {
+            height: 40px;
+            margin-bottom: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #e3f2fd;
+        }
+
+        .loading-bar-container {
+            width: 100%;
+            max-width: 400px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #2196f3, #42a5f5, #64b5f6, #90caf9);
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: #90caf9;
+            font-weight: 500;
+            margin-top: 15px;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 30px;
+            font-size: 1rem;
+            color: #90a4ae;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 8px rgba(144, 164, 174, 0.3);
+        }
+
+        /* INITIAL CONTROLS POPUP */
+        #initialControlsPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        #initialControlsPopup.show {
+            display: flex;
+        }
+
+        .initial-controls-content {
+            background: rgba(20, 20, 30, 0.95);
+            border: 2px solid rgba(100, 181, 246, 0.4);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px) scale(0.95);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .initial-popup-header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+
+        .initial-popup-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #64b5f6, #2196f3);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .initial-popup-subtitle {
+            font-size: 0.9rem;
+            color: #b0bec5;
+            font-weight: 300;
+        }
+
+        .initial-control-section {
+            margin-bottom: 20px;
+        }
+
+        .initial-section-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            color: #90caf9;
+            display: flex;
+            align-items: center;
+        }
+
+        .initial-section-title::before {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: linear-gradient(135deg, #64b5f6, #2196f3);
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+
+        .initial-control-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .initial-control-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .initial-control-key {
+            background: rgba(100, 181, 246, 0.2);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 0.8rem;
+            min-width: 30px;
+            text-align: center;
+            color: #90caf9;
+            margin-right: 8px;
+        }
+
+        .initial-control-desc {
+            font-size: 0.85rem;
+            color: #e0e0e0;
+        }
+
+        .initial-popup-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+
+        .initial-popup-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            flex: 1;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .show-more-btn {
+            background: rgba(100, 181, 246, 0.2);
+            color: #90caf9;
+            border: 1px solid rgba(100, 181, 246, 0.3);
+        }
+
+        .show-more-btn:hover {
+            background: rgba(100, 181, 246, 0.3);
+            color: white;
+        }
+
+        .bajajlogo {
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .ourpics {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            /* space between images */
+            margin-bottom: 15px;
+        }
+
+        .ourpics img {
+            height: 45px;
+            border-radius: 50%;
+        }
+
+
+        /* Mobile adjustments for popup */
+        @media (max-height: 500px) {
+            .main-title {
+                top: 10px;
+                font-size: 1rem;
+            }
+
+            .subtitle {
+                font-size: 0.5rem;
+                margin-bottom: 0px;
+            }
+
+            .loading-content {
+                text-align: center;
+                max-width: 600px;
+                transform: translateY(-5%);
+                /* Shifts the element up by 20% of its own height */
+            }
+
+            .bajajlogo {
+                height: 40px;
+                margin: 10px;
+            }
+
+            .status-container {
+                margin-top: 15px;
+                height: 15px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .status-text {
+                font-size: 0.4rem;
+                font-weight: 500;
+                color: #e3f2fd;
+            }
+
+            .loading-bar-container {
+                max-width: 300px;
+                height: 2px;
+            }
+
+            .progress-text {
+                font-size: 0.3rem;
+                color: #90caf9;
+                font-weight: 500;
+                margin-top: 5px;
+                font-family: 'Orbitron', monospace;
+            }
+
+            .footer-text {
+                font-size: 0.4rem;
+                bottom: 5px;
+            }
+
+            .ourpics {
+                gap: 5px;
+                margin-bottom: 5px;
+            }
+
+            .ourpics img {
+                height: 25px;
+            }
+
+            .initial-controls-content {
+                padding: 15px;
+                max-width: 350px;
+            }
+
+            .initial-popup-title {
+                font-size: 1.2rem;
+            }
+
+            .initial-control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .initial-control-key {
+                min-width: 40px;
+            }
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+        }
+
+        #hamburgerIcon {
+            width: 40px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: rgba(33, 150, 243, 0.8);
+            border: 2px solid rgba(33, 150, 243, 1);
+            border-radius: 10px;
+            padding: 5px;
+            box-sizing: border-box;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        #hamburgerIcon div {
+            height: 3px;
+            width: 25px;
+            background: white;
+            border-radius: 2px;
+            margin-bottom: 5px;
+        }
+
+        #hamburgerIcon div:last-child {
+            margin-bottom: 0;
+        }
+
+        #hamburgerIcon:hover {
+            background: rgba(33, 150, 243, 1);
+            transform: scale(1.05);
+        }
+
+        #viewsContainer {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            /* Set a fixed width to control when items wrap */
+            height: auto;
+            /* Allow the height to grow to fit two rows */
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            /* Added some padding for better spacing */
+            display: none;
+            justify-content: center;
+            /* Use 'center' for better alignment of both rows */
+            align-items: center;
+            flex-wrap: wrap;
+            /* This is the most important change! It allows items to wrap to the next line. */
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+
+        #viewsContainer.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .view-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-family: 'Orbitron', monospace;
+            font-size: 10px;
+            width: 20px;
+            height: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            /* Space between number and name */
+            overflow: hidden;
+            margin: 5px;
+        }
+
+        .view-name {
+            display: none;
+            /* Hide the name by default */
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+            /* Prevent name from wrapping */
+        }
+
+        .view-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .view-btn.active {
+            background: #2196f3;
+            border-color: #64b5f6;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+            width: auto;
+            padding: 5px;
+            justify-content: space-between;
+        }
+
+        .view-btn.active .view-name {
+            display: inline;
+            /* Show the name only on the active button */
+        }
+
+        /* Add a new style for the camera button when in "Views" mode */
+        #desktopCameraModeButton.views-mode {
+            background: rgba(156, 39, 176, 0.8);
+            /* A distinct purple color */
+            border-color: rgba(156, 39, 176, 1);
+        }
+
+        #desktopCameraModeButton.views-mode:hover {
+            background: rgba(156, 39, 176, 1);
+        }
+
+        #viewsModeButton {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(156, 39, 176, 0.8);
+            border: 2px solid rgba(156, 39, 176, 1);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 15px;
+            text-align: center;
+            min-width: 110px;
+            transition: all 0.3s ease;
+        }
+
+        #viewsModeButton:hover:not(.disabled) {
+            background: rgba(156, 39, 176, 1);
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        /* Generic Disabled Style for Buttons */
+        .disabled {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- audio -->
+    <audio id="bgAudio" src="bellpianoglbinstitutions.mp3" loop preload="auto"></audio>
+    <!-- audio toggle button -->
+    <button id="audioToggleButton" aria-pressed="false" title="toggle background music">
+        Play Music
+    </button>
+
+    <!-- Rotation Message for Portrait Mode -->
+    <div id="rotationMessage">
+        <!-- added image - rotate.png should be in the same folder -->
+        <img src="rotate.png" alt="please-rotate-your-device">
+        <div class="rotate-icon"></div>
+        <h2>Please Rotate Your Device</h2>
+        <p>This experience is optimized for landscape mode.<br>
+            Please rotate your device horizontally for the best experience.</p>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div class="loading-content">
+            <img src="/Logo.png" class="bajajlogo">
+            <div class="main-title">G.L. BAJAJ</div>
+            <div class="subtitle">INSTITUTIONS</div>
+
+            <div class="status-container">
+                <div class="status-text" id="statusText">Initializing Campus Experience...</div>
+            </div>
+
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+
+            <div class="progress-text">
+                <span id="progressPercent">0</span>% Complete
+            </div>
+        </div>
+
+        <div class="footer-text">
+            <div class="ourpics">
+                <img src="/Rudransh Pic.jpg">
+                <img src="/Arnav Pic.jpg">
+            </div>
+            Crafted by Rudransh and Arnav
+        </div>
+    </div>
+
+    <!-- INITIAL CONTROLS POPUP -->
+    <div id="initialControlsPopup">
+        <div class="initial-controls-content">
+            <div class="initial-popup-header">
+                <div class="initial-popup-title">CAMPUS CONTROLS</div>
+                <div class="initial-popup-subtitle">Learn the basics to explore G.L. Bajaj Institutions</div>
+            </div>
+
+            <div class="initial-control-section">
+                <div class="initial-section-title">Movement</div>
+                <div class="initial-control-grid">
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">WASD</div>
+                        <div class="initial-control-desc">Move Around</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">SPACE</div>
+                        <div class="initial-control-desc">Jump</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">SHIFT</div>
+                        <div class="initial-control-desc">Sprint</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">MOUSE</div>
+                        <div class="initial-control-desc">Look Around</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="initial-control-section">
+                <div class="initial-section-title">Camera Modes</div>
+                <div class="initial-control-grid">
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">O</div>
+                        <div class="initial-control-desc">Orbit View</div>
+                    </div>
+                    <div class="initial-control-item">
+                        <div class="initial-control-key">P</div>
+                        <div class="initial-control-desc">First Person</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="initial-popup-buttons">
+                <button class="initial-popup-btn start-btn" id="startExploringBtn">
+                    START EXPLORING
+                </button>
+                <button class="initial-popup-btn show-more-btn" id="showMoreControlsBtn">
+                    VIEW ALL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Controls Menu -->
+    <div id="controlsMenu">
+        <div class="controls-header">
+            <div class="controls-title">CONTROLS</div>
+            <button class="close-btn" id="closeControlsBtn">×</button>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Movement</div>
+            <div class="control-item">
+                <div class="control-key">W/↑</div>
+                <div class="control-desc">Move Forward</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">A/←</div>
+                <div class="control-desc">Move Left</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">S/↓</div>
+                <div class="control-desc">Move Backward</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">D/→</div>
+                <div class="control-desc">Move Right</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">SHIFT</div>
+                <div class="control-desc">Sprint</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">SPACE</div>
+                <div class="control-desc">Jump</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Camera</div>
+            <div class="control-item">
+                <div class="control-key">O</div>
+                <div class="control-desc">Orbit Camera Mode</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">P</div>
+                <div class="control-desc">First Person Mode</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">Click</div>
+                <div class="control-desc">Lock Cursor (FPS Mode)</div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="section-title">Debug</div>
+            <div class="control-item">
+                <div class="control-key">B</div>
+                <div class="control-desc">Toggle Collision Boxes</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">I</div>
+                <div class="control-desc">Show Position Info</div>
+            </div>
+            <div class="control-item">
+                <div class="control-key">L</div>
+                <div class="control-desc">Toggle Collision Logging</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" style="opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in;">
+        <h1 class="top-left">
+            <a href="dashboard.html" aria-label="Go to Dashboard"
+                style="display:flex; align-items:center; color: white; text-decoration:none;">
+                <div id="hamburgerIcon" aria-hidden="true">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </a>
+            G.L. Bajaj Institutions
+        </h1>
+
+
+        <!-- Controls Menu Button (Desktop Only) -->
+        <button id="controlsMenuBtn">Controls</button>
+
+        <!-- Desktop Camera Mode Button -->
+        <button id="desktopCameraModeButton">Orbit Mode</button>
+    </div>
+    
+    <script>
+        // Global loading state
+        window.loadingState = {
+            assetsLoaded: false,
+            minimumTimeReached: false,
+            currentProgress: 0
+        };
+
+        // Desktop Controls Menu Logic
+        function initControlsMenu() {
+            const controlsMenuBtn = document.getElementById('controlsMenuBtn');
+            const controlsMenu = document.getElementById('controlsMenu');
+            const closeControlsBtn = document.getElementById('closeControlsBtn');
+
+            // Show controls menu
+            controlsMenuBtn.addEventListener('click', () => {
+                controlsMenu.classList.add('show');
+            });
+
+            // Close controls menu
+            closeControlsBtn.addEventListener('click', () => {
+                controlsMenu.classList.remove('show');
+            });
+
+            // Optional: Close menu with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && controlsMenu.classList.contains('show')) {
+                    controlsMenu.classList.remove('show');
+                }
+            });
+        }
+
+        // Initial Controls Popup Logic
+        function initInitialControlsPopup() {
+            const initialControlsPopup = document.getElementById('initialControlsPopup');
+            const startExploringBtn = document.getElementById('startExploringBtn');
+            const showMoreControlsBtn = document.getElementById('showMoreControlsBtn');
+            const controlsMenu = document.getElementById('controlsMenu');
+            // Show initial popup
+            if (!(/Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent)) && window.innerWidth > 768) {
+                function showInitialPopup() {
+                    initialControlsPopup.classList.add('show');
+                }
+            }
+
+            // Hide initial popup
+            function hideInitialPopup() {
+                initialControlsPopup.classList.remove('show');
+            }
+
+            // Start exploring button
+            startExploringBtn.addEventListener('click', () => {
+                hideInitialPopup();
+            });
+
+            // Show more controls button
+            showMoreControlsBtn.addEventListener('click', () => {
+                hideInitialPopup();
+                // Small delay to show the full controls menu
+                setTimeout(() => {
+                    controlsMenu.classList.add('show');
+                }, 200);
+            });
+
+            // Close on ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && initialControlsPopup.classList.contains('show')) {
+                    hideInitialPopup();
+                }
+            });
+
+            // Close on background click
+            initialControlsPopup.addEventListener('click', (e) => {
+                if (e.target === initialControlsPopup) {
+                    hideInitialPopup();
+                }
+            });
+
+            return { showInitialPopup };
+        }
+
+        // Desktop Camera Mode Toggle Logic
+        // In index.html, REPLACE your function with this one.
+
+        // 1. This function now reliably toggles between Orbit and FPS
+        function initDesktopCameraToggle() {
+            const cameraModeButton = document.getElementById('desktopCameraModeButton');
+            let isOrbitMode = true; // Default state is Orbit
+
+            cameraModeButton.addEventListener('click', () => {
+                // Check if the button is disabled (which means we are currently in Views mode)
+                if (cameraModeButton.classList.contains('disabled')) {
+                    // --- REACTIVATION LOGIC ---
+                    // If the button is faded and clicked, we want to exit Views and switch back to Orbit.
+                    isOrbitMode = true; // Reset the state to Orbit.
+                    window.activateOrbitControls(); // This function handles all the UI and camera changes.
+
+                    // Manually update the button's appearance since activateOrbitControls doesn't do it.
+                    cameraModeButton.textContent = 'Orbit Mode';
+                    cameraModeButton.classList.remove('fps-mode');
+
+                } else {
+                    // --- NORMAL TOGGLE LOGIC ---
+                    // If the button is already active, just toggle between Orbit and FPS.
+                    isOrbitMode = !isOrbitMode;
+                    if (isOrbitMode) {
+                        window.activateOrbitControls();
+                        cameraModeButton.textContent = 'Orbit Mode';
+                        cameraModeButton.classList.remove('fps-mode');
+                    } else {
+                        window.activateFPSControls();
+                        cameraModeButton.textContent = 'FPS Mode';
+                        cameraModeButton.classList.add('fps-mode');
+                    }
+                }
+            });
+        }
+
+        // 2. This function for the "Views" button is correct and needs no changes
+        function initViewsModeButton() {
+            const viewsModeButton = document.getElementById('viewsModeButton');
+            const cameraModeButton = document.getElementById('desktopCameraModeButton');
+
+            viewsModeButton.addEventListener('click', () => {
+                window.activateViewsMode();
+                // When in Views mode, disable the top button and enable this one
+                cameraModeButton.classList.add('disabled');
+                viewsModeButton.classList.remove('disabled');
+            });
+        }
+
+        // 3. This ensures all the setup functions are called when the page is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            startLoading();
+            initControlsMenu();
+            initDesktopCameraToggle(); // Call the corrected top button function
+            initViewsModeButton();    // Call the bottom button function
+        });
+
+        function startLoading() {
+            const statusText = document.getElementById('statusText');
+            const loadingBar = document.getElementById('loadingBar');
+            const progressPercent = document.getElementById('progressPercent');
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContent = document.getElementById('mainContent');
+            const { showInitialPopup } = initInitialControlsPopup();
+
+            const messages = [
+                'Initializing Campus Experience...',
+                'Loading 3D Architecture Models...',
+                'Preparing Virtual Campus Tour...',
+                'Optimizing Interactive Elements...'
+            ];
+
+            let currentMessage = 0;
+            const startTime = Date.now();
+            const minimumTime = 8000; // 5 seconds minimum
+
+            // Change messages every 2 seconds for first 8 seconds, then show waiting message
+            const messageTimer = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+
+                if (elapsed < minimumTime) {
+                    // First 8 seconds - cycle through messages
+                    currentMessage = Math.floor(elapsed / 2000);
+                    if (currentMessage < messages.length) {
+                        statusText.textContent = messages[currentMessage];
+                    }
+                } else {
+                    // After 8 seconds - show waiting message if assets not loaded
+                    if (!window.loadingState.assetsLoaded) {
+                        statusText.textContent = 'Finalizing 3D Models...';
+                    }
+                }
+            }, 100);
+
+            // Progress bar logic
+            const progressTimer = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+
+                // Calculate progress based on time and asset loading
+                let timeProgress = Math.min((elapsed / minimumTime) * 80, 80); // Time contributes up to 80%
+                let assetProgress = window.loadingState.assetsLoaded ? 20 : 0; // Assets contribute 20%
+
+                window.loadingState.currentProgress = timeProgress + assetProgress;
+
+                // Update minimum time flag
+                if (elapsed >= minimumTime) {
+                    window.loadingState.minimumTimeReached = true;
+                }
+
+                // Update UI
+                loadingBar.style.width = window.loadingState.currentProgress + '%';
+                progressPercent.textContent = Math.floor(window.loadingState.currentProgress);
+
+                // Check if we can complete loading
+                if (window.loadingState.assetsLoaded && window.loadingState.minimumTimeReached) {
+                    clearInterval(messageTimer);
+                    clearInterval(progressTimer);
+
+                    // Complete loading
+                    statusText.textContent = 'Experience Ready!';
+                    loadingBar.style.width = '100%';
+                    progressPercent.textContent = '100';
+
+                    setTimeout(() => {
+                        loadingScreen.classList.add('fade-out');
+                        mainContent.style.opacity = '1';
+                        mainContent.style.pointerEvents = 'auto';
+
+                        setTimeout(() => {
+                            loadingScreen.style.display = 'none';
+                            // Show initial controls popup after loading is complete
+                            setTimeout(() => {
+                                showInitialPopup();
+                            }, 500);
+                        }, 800);
+                    }, 500);
+                }
+            }, 50);
+        }
+
+        // Function to be called by main.js when assets are loaded
+        window.onAssetsLoaded = function () {
+            window.loadingState.assetsLoaded = true;
+            console.log('Assets loaded, checking if minimum time reached...');
+        };
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            startLoading();
+            initControlsMenu();
+            initDesktopCameraToggle();
+        });
+        (function () {
+            const audio = document.getElementById('bgAudio');
+            const btn = document.getElementById('audioToggleButton');
+
+            // state - relies on audio.paused for truth
+            function updateButton() {
+                if (!audio.paused) {
+                    btn.classList.add('playing');
+                    btn.setAttribute('aria-pressed', 'true');
+                    btn.textContent = '🔉';
+                } else {
+                    btn.classList.remove('playing');
+                    btn.setAttribute('aria-pressed', 'false');
+                    btn.textContent = '🔇';
+                }
+            }
+
+            // toggle on click - this is a user gesture so play() will be allowed
+            btn.addEventListener('click', async () => {
+                try {
+                    if (audio.paused) {
+                        await audio.play(); // play on user gesture
+                    } else {
+                        audio.pause();
+                        audio.currentTime = 0; // optional - reset so it restarts clean next play
+                    }
+                } catch (err) {
+                    // some browsers might block - fallback is to set muted and play
+                    console.warn('audio play failed -', err);
+                }
+                updateButton();
+            });
+
+            // start state
+            updateButton();
+
+            // optionally - start music automatically when the user clicks "start exploring"
+            const startExploringBtn = document.getElementById('startExploringBtn');
+            if (startExploringBtn) {
+                startExploringBtn.addEventListener('click', async () => {
+                    if (audio.paused) {
+                        try { await audio.play(); } catch (e) { /* ignore */ }
+                        updateButton();
+                    }
+                });
+            }
+
+            // keep button label in sync if audio ended or paused externally
+            audio.addEventListener('play', updateButton);
+            audio.addEventListener('pause', updateButton);
+        })();
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                // Force a repaint after orientation change
+                window.dispatchEvent(new Event('resize'));
+            }, 500);
+        });
+    </script>
+    <script src="https://unpkg.com/@tweenjs/tween.js@21.0.0/dist/tween.umd.js"></script>
+<script type="module" src="/SHD.js"></script>
+
+</body>
+
+</html>
