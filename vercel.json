@@ -7,7 +7,7 @@
         },
         {
             "source": "/SHD",
-            "destination": "SHD.html"
+            "destination": "/SHD.html"
         },
         {
             "source": "/contact",
