@@ -117,6 +117,17 @@
             z-index: 0;
         }
 
+        .temp {
+            position: absolute;
+            top: 25px;
+            left: 250px;
+            z-index: 10;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+        }
+
         .top-left {
             position: absolute;
             top: 12px;
@@ -927,7 +938,7 @@
     <!-- Loading Screen -->
     <div id="loadingScreen">
         <div class="loading-content">
-            <img src="/Logo.png" class="bajajlogo"><h1>Hello</h1>
+            <img src="/Logo.png" class="bajajlogo">
             <div class="main-title">G.L. BAJAJ</div>
             <div class="subtitle">INSTITUTIONS</div>
 
@@ -1089,7 +1100,7 @@
             </a>
             G.L. Bajaj Institutions
         </h1>
-
+        <a href="/SHD.html" class="temp">SHD</a>
 
         <!-- Controls Menu Button (Desktop Only) -->
         <button id="controlsMenuBtn">Controls</button>
@@ -1097,7 +1108,53 @@
         <!-- Desktop Camera Mode Button -->
         <button id="desktopCameraModeButton">Orbit Mode</button>
     </div>
-    
+    <button id="viewsModeButton" class="disabled">Other Views</button>
+    <div id="viewsContainer">
+        <button class="view-btn" data-view="0">
+            <span class="view-num">1</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="1">
+            <span class="view-num">2</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="2">
+            <span class="view-num">3</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="3">
+            <span class="view-num">4</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="4">
+            <span class="view-num">5</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="5">
+            <span class="view-num">6</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="6">
+            <span class="view-num">7</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="7">
+            <span class="view-num">8</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="8">
+            <span class="view-num">9</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="9">
+            <span class="view-num">10</span>
+            <span class="view-name"></span>
+        </button>
+        <button class="view-btn" data-view="10">
+            <span class="view-num">11</span>
+            <span class="view-name"></span>
+        </button>
+    </div>
     <script>
         // Global loading state
         window.loadingState = {
@@ -1392,7 +1449,7 @@
         });
     </script>
     <script src="https://unpkg.com/@tweenjs/tween.js@21.0.0/dist/tween.umd.js"></script>
-<script type="module" src="/SHD.js"></script>
+    <script type="module" src="/SHD.js"></script>
 
 </body>
 

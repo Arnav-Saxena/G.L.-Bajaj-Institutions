@@ -1510,7 +1510,7 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5
 const loader = new GLTFLoader(loadingManager);
 loader.setDRACOLoader(dracoLoader);
 
-loader.load('SHD.glb',
+loader.load('/SHD.glb',
     (gltf) => {
         console.log('GLTF model loaded successfully');
         scene.add(gltf.scene);
