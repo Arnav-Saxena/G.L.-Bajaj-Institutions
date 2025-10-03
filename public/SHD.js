@@ -1451,7 +1451,7 @@ function activateFPSControls() {
     orbitControls.autoRotate = false;
     fpsControls.enabled = true;
     activeControls = fpsControls;
-    camera.position.set(172.0, 1.85, 0);
+    camera.position.set(10, 1.85, 0);
     console.log('FPS Controls Activated');
     camera.lookAt(0, 0, 0);
     camera.rotation.set(0, Math.PI / 2, 0);
