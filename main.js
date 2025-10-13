@@ -511,6 +511,8 @@ function activateViewsMode() {
     document.getElementById('viewsModeButton')?.classList.remove('disabled');
 
     fpsControls.unlock && fpsControls.unlock();
+    crosshair.style.display = 'none'; // Hide crosshair
+    escHint.style.display = 'none'; // Hide ESC hint
     fpsControls.enabled = false;
     orbitControls.enabled = true; // Will be temporarily disabled by tween
     activeControls = orbitControls;
@@ -1149,6 +1151,80 @@ function createMobileControls() {
 // Initialize mobile controls
 createMobileControls();
 
+// --------------------- CROSSHAIR ---------------------
+function createCrosshair() {
+    const crosshair = document.createElement('div');
+    crosshair.id = 'crosshair';
+    crosshair.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 4px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1500;
+        display: none;
+        border: 2px solid black;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+    `;
+    document.body.appendChild(crosshair);
+    return crosshair;
+}
+
+const crosshair = createCrosshair();
+// --------------------- ESC HINT POPUP ---------------------
+function createEscHint() {
+    const escHint = document.createElement('div');
+    escHint.id = 'escHint';
+    escHint.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        z-index: 1500;
+        display: none;
+        pointer-events: none;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: opacity 0.5s ease;
+    `;
+    escHint.textContent = 'Press ESC to unlock cursor';
+    document.body.appendChild(escHint);
+    return escHint;
+}
+
+const escHint = createEscHint();
+
+// Variable to track the timeout
+let escHintTimeout = null;
+
+// Function to show ESC hint with auto-hide
+function showEscHint() {
+    escHint.style.display = 'block';
+    escHint.style.opacity = '1';
+
+    // Clear any existing timeout
+    if (escHintTimeout) {
+        clearTimeout(escHintTimeout);
+    }
+
+    // Set new timeout to hide after 5 seconds
+    escHintTimeout = setTimeout(() => {
+        escHint.style.opacity = '0';
+        setTimeout(() => {
+            escHint.style.display = 'none';
+        }, 500); // Wait for fade out animation
+    }, 5000);
+}
+
 // --------------------- FULLSCREEN BUTTON ---------------------
 
 function createFullscreenButton() {
@@ -1341,6 +1417,8 @@ function activateOrbitControls() {
     document.getElementById('viewsModeButton')?.classList.add('disabled');
 
     isTweeningCamera = false;
+    crosshair.style.display = 'none'; // Hide crosshair
+    escHint.style.display = 'none'; // Hide ESC hint
     // ... (rest of the function is the same)
     camera.position.set(280, 60, 100);
     fpsControls.unlock && fpsControls.unlock();
@@ -1477,7 +1555,8 @@ function activateFPSControls() {
     document.getElementById('viewsModeButton')?.classList.add('disabled');
 
     isTweeningCamera = false;
-    // ... (rest of the function is the same)
+    crosshair.style.display = 'block'; // Show crosshair
+    showEscHint(); // Show ESC hint with auto-hide    // ... (rest of the function is the same)
     orbitControls.enabled = false;
     orbitControls.autoRotate = false;
     fpsControls.enabled = true;
